@@ -1,0 +1,33 @@
+/* Custom styles for template components */
+
+.featured-products-container {
+  padding-left: 2rem;  /* 32px */
+  padding-right: 2rem; /* 32px */
+}
+
+@media (min-width: 768px) {
+  .featured-products-container {
+    padding-left: 3rem;  /* 48px */
+    padding-right: 3rem; /* 48px */
+  }
+}
+
+@media (min-width: 1024px) {
+  .featured-products-container {
+    padding-left: 4rem;  /* 64px */
+    padding-right: 4rem; /* 64px */
+  }
+}
+
+/* Alternative: even more padding */
+.featured-products-tight {
+  padding-left: 4rem;
+  padding-right: 4rem;
+}
+
+@media (min-width: 768px) {
+  .featured-products-tight {
+    padding-left: 6rem;
+    padding-right: 6rem;
+  }
+}
