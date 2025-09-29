@@ -41,9 +41,8 @@ class HandleInertiaRequests extends Middleware
         // Get cart count for authenticated users
         $cartCount = 0;
         if ($request->user()) {
-            // You can implement your cart count logic here
-            // For now, using a simple session-based count
-            $cartCount = $request->session()->get('cart_count', 0);
+            $cartCount = \App\Models\CartItem::where('user_id', $request->user()->id)
+                ->sum('quantity');
         }
 
         return [

@@ -67,7 +67,7 @@ const RelatedProducts = ({ products, onAddToWishlist }: RelatedProductsProps) =>
             className="flex-shrink-0 w-80 bg-background rounded-lg border border-border overflow-hidden hover:shadow-elevation-md transition-hover group"
           >
             <div className="relative aspect-square overflow-hidden">
-              <Link href={`/product-detail?id=${product?.id}`}>
+              <Link href={`/products?id=${product?.id}`}>
                 <Image
                   src={product?.image}
                   alt={product?.name}
@@ -91,7 +91,7 @@ const RelatedProducts = ({ products, onAddToWishlist }: RelatedProductsProps) =>
             </div>
 
             <div className="p-4">
-              <Link href={`/product-detail?id=${product?.id}`}>
+              <Link href={`/products?id=${product?.id}`}>
                 <h3 className="font-semibold text-foreground mb-2 hover:text-primary transition-hover line-clamp-2">
                   {product?.name}
                 </h3>

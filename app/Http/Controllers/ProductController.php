@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\Product;
+use App\Models\Category;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -32,13 +35,26 @@ class ProductController extends Controller
      */
     public function show(Request $request, $id = null): Response
     {
-        // Get product ID from route parameter or query
         $productId = $id ?? $request->query('id');
 
+        if (!$productId) {
+            abort(404, 'Product ID not provided');
+        }
+
+        $product = $this->getProduct($productId);
+
+        if (!$product) {
+            abort(404, 'Product not found');
+        }
+
+        $user = $request->user();
+
         return Inertia::render('product-detail/index', [
-            'product' => $this->getProduct($productId),
+            'product' => $product,
             'related_products' => $this->getRelatedProducts($productId),
             'reviews' => $this->getProductReviews($productId),
+            'user' => $user,
+            'cartCount' => $user ? $user->cartItems()->sum('quantity') : 0,
         ]);
     }
 
@@ -47,55 +63,115 @@ class ProductController extends Controller
      */
     private function getProducts($category = null, $filter = null, $search = null): array
     {
-        // Mock data - replace with actual database queries
-        $products = [
-            [
-                'id' => 1,
-                'name' => 'Premium Cotton T-Shirt',
-                'category' => "Men's Clothing",
-                'price' => 29.99,
-                'original_price' => 39.99,
-                'rating' => 4.5,
-                'review_count' => 128,
-                'image' => 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
-                'is_new' => true,
-                'discount' => 25,
-                'in_stock' => true,
-            ],
-            // Add more products...
-        ];
+        $query = Product::with(['images', 'category'])->active();
 
-        // Apply filters here
-        return $products;
+        // Apply category filter
+        if ($category) {
+            $categoryModel = Category::where('slug', $category)->first();
+            if ($categoryModel) {
+                $query->where('category_id', $categoryModel->id);
+            }
+        }
+
+        // Apply search filter
+        if ($search) {
+            $query->search($search);
+        }
+
+        // Apply other filters
+        if ($filter === 'new-arrivals') {
+            $query->new();
+        } elseif ($filter === 'bestsellers') {
+            $query->bestseller();
+        } elseif ($filter === 'featured') {
+            $query->featured();
+        }
+
+        return $query->orderBy('created_at', 'desc')
+            ->paginate(12)
+            ->through(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'category' => $product->category->name,
+                    'price' => (float) $product->price,
+                    'original_price' => $product->compare_price ? (float) $product->compare_price : null,
+                    'rating' => (float) $product->rating,
+                    'review_count' => $product->review_count,
+                    'image' => $product->primary_image_url ?? 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
+                    'is_new' => $product->is_new,
+                    'is_bestseller' => $product->is_bestseller,
+                    'discount' => $product->discount_percentage,
+                    'in_stock' => $product->inStock(),
+                    'slug' => $product->slug,
+                    'colors' => $product->colors ?? [],
+                    'sizes' => $product->sizes ?? [],
+                ];
+            })
+            ->toArray();
     }
 
     /**
      * Get single product details
      */
-    private function getProduct($id): array
+    private function getProduct($id): ?array
     {
+        Log::info("Fetching product with ID/slug: {$id}");
+
+        $product = Product::with(['images', 'category'])
+            ->where('id', $id)
+            ->orWhere('slug', $id)
+            ->active()
+            ->first();
+
+        if (!$product) {
+            Log::error("Product not found for ID or slug: {$id}");
+            return null;
+        }
+
+        // Increment view count
+        $product->incrementViewCount();
+
+        // Normalize colors to match frontend expectation
+        $colors = array_map(function ($color) {
+            return is_array($color) ? $color['name'] : $color;
+        }, $product->colors ?? []);
+
         return [
-            'id' => $id,
-            'name' => 'Premium Cotton T-Shirt',
-            'category' => "Men's Clothing",
-            'price' => 29.99,
-            'original_price' => 39.99,
-            'rating' => 4.5,
-            'review_count' => 128,
-            'description' => 'High-quality cotton t-shirt perfect for everyday wear.',
-            'images' => [
-                'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=800&fit=crop',
-                'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=800&fit=crop',
-            ],
-            'sizes' => ['XS', 'S', 'M', 'L', 'XL'],
-            'colors' => ['#000000', '#FFFFFF', '#1E3A8A'],
-            'in_stock' => true,
-            'features' => [
-                '100% Premium Cotton',
-                'Machine Washable',
-                'Comfortable Fit',
-                'Breathable Fabric'
-            ]
+            'id' => $product->id,
+            'name' => $product->name,
+            'category' => $product->category ? $product->category->name : 'Uncategorized',
+            'category_slug' => $product->category ? $product->category->slug : 'uncategorized',
+            'price' => (float) $product->price,
+            'original_price' => $product->compare_price ? (float) $product->compare_price : null,
+            'rating' => (float) ($product->rating ?? 0),
+            'review_count' => $product->review_count ?? 0,
+            'description' => $product->description ?? '',
+            'short_description' => $product->short_description ?? '',
+            'images' => $product->images->isEmpty() ? [
+                [
+                    'url' => asset('images/placeholder-product.svg'),
+                    'alt' => $product->name,
+                    'is_primary' => true,
+                ]
+            ] : $product->images->map(function ($image) {
+                return [
+                    'url' => $image->image_url ?? asset('images/placeholder-product.svg'),
+                    'alt' => $image->alt_text ?? 'Product Image',
+                    'is_primary' => $image->is_primary ?? false,
+                ];
+            })->toArray(),
+            'sizes' => $product->sizes ?? [],
+            'colors' => $colors, // Use normalized colors
+            'in_stock' => $product->inStock(),
+            'stock_quantity' => $product->track_stock ? $product->stock_quantity : null,
+            'features' => $product->features ?? [],
+            'care_instructions' => $product->care_instructions ?? [],
+            'brand' => $product->brand ?? null,
+            'material' => $product->material ?? null,
+            'fit' => $product->fit ?? null,
+            'sku' => $product->sku ?? '',
+            'slug' => $product->slug ?? '',
         ];
     }
 
@@ -104,9 +180,30 @@ class ProductController extends Controller
      */
     private function getRelatedProducts($productId): array
     {
-        return [
-            // Related products array
-        ];
+        $product = Product::find($productId);
+        if (!$product) {
+            return [];
+        }
+
+        return Product::with(['images', 'category'])
+            ->where('category_id', $product->category_id)
+            ->where('id', '!=', $productId)
+            ->active()
+            ->limit(8)
+            ->get()
+            ->map(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => (float) $product->price,
+                    'original_price' => $product->compare_price ? (float) $product->compare_price : null,
+                    'rating' => (float) $product->rating,
+                    'review_count' => $product->review_count,
+                    'image' => $product->primary_image_url ?? 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
+                    'slug' => $product->slug,
+                ];
+            })
+            ->toArray();
     }
 
     /**
@@ -114,8 +211,22 @@ class ProductController extends Controller
      */
     private function getProductReviews($productId): array
     {
+        // TODO: Implement reviews system
         return [
-            // Reviews array
+            [
+                'id' => 1,
+                'user_name' => 'John Doe',
+                'rating' => 5,
+                'comment' => 'Great quality product! Very satisfied.',
+                'created_at' => '2024-01-15',
+            ],
+            [
+                'id' => 2,
+                'user_name' => 'Jane Smith',
+                'rating' => 4,
+                'comment' => 'Good product, fast delivery.',
+                'created_at' => '2024-01-10',
+            ],
         ];
     }
 
@@ -124,12 +235,29 @@ class ProductController extends Controller
      */
     private function getCategories(): array
     {
-        return [
-            ['id' => 'mens', 'name' => "Men's Clothing"],
-            ['id' => 'womens', 'name' => "Women's Clothing"],
-            ['id' => 'footwear', 'name' => 'Footwear'],
-            ['id' => 'corporate', 'name' => 'Corporate Wear'],
-        ];
+        return Category::active()
+            ->parents()
+            ->orderBy('sort_order')
+            ->get()
+            ->map(function ($category) {
+                return [
+                    'id' => $category->slug,
+                    'name' => $category->name,
+                    'children' => $category->children()
+                        ->active()
+                        ->orderBy('sort_order')
+                        ->get()
+                        ->map(function ($child) {
+                            return [
+                                'id' => $child->slug,
+                                'name' => $child->name,
+                                'product_count' => $child->activeProducts()->count(),
+                            ];
+                        })
+                        ->toArray(),
+                ];
+            })
+            ->toArray();
     }
 
     /**

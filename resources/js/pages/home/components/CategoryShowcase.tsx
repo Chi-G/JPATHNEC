@@ -22,15 +22,15 @@ interface Category {
 interface AdditionalCategory {
   name: string;
   icon: string;
-  link: string;
+  link: string; 
 }
 
 const CategoryShowcase: React.FC = () => {
   const categories: Category[] = [
     {
       id: 'mens',
-      title: "Men\\'s Collection",
-      description: "Discover premium men\\'s apparel and footwear",
+      title: "Men's Collection",
+      description: "Discover premium men's apparel and footwear",
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop",
       link: "/product-list?category=mens",
       stats: "500+ Products",
@@ -42,8 +42,8 @@ const CategoryShowcase: React.FC = () => {
     },
     {
       id: 'womens',
-      title: "Women\\'s Collection",
-      description: "Elegant women\\'s fashion and accessories",
+      title: "Women's Collection",
+      description: "Elegant women's fashion and accessories",
       image: "https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?w=600&h=400&fit=crop",
       link: "/product-list?category=womens",
       stats: "450+ Products",

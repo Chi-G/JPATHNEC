@@ -6,6 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\Product;
+use App\Models\Category;
+use App\Models\CartItem;
+use App\Models\ProductImage;
+use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
@@ -37,31 +42,79 @@ class HomeController extends Controller
      */
     private function getFeaturedProducts(): array
     {
-        // Mock data - replace with actual database queries
+        $newArrivals = Product::with(['images', 'category'])
+            ->active()
+            ->new()
+            ->limit(8)
+            ->get()
+            ->map(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'category' => $product->category->name,
+                    'price' => (float) $product->price,
+                    'original_price' => $product->compare_price ? (float) $product->compare_price : null,
+                    'rating' => (float) $product->rating,
+                    'review_count' => $product->review_count,
+                    'image' => $product->primary_image_url ?? 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
+                    'is_new' => $product->is_new,
+                    'discount' => $product->discount_percentage,
+                    'colors' => collect($product->colors ?? [])->pluck('hex')->toArray(),
+                    'is_wishlisted' => false, // TODO: Check if user has wishlisted
+                    'slug' => $product->slug,
+                ];
+            });
+
+        $bestSellers = Product::with(['images', 'category'])
+            ->active()
+            ->bestseller()
+            ->limit(8)
+            ->get()
+            ->map(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'category' => $product->category->name,
+                    'price' => (float) $product->price,
+                    'original_price' => $product->compare_price ? (float) $product->compare_price : null,
+                    'rating' => (float) $product->rating,
+                    'review_count' => $product->review_count,
+                    'image' => $product->primary_image_url ?? 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
+                    'is_new' => $product->is_new,
+                    'discount' => $product->discount_percentage,
+                    'colors' => collect($product->colors ?? [])->pluck('hex')->toArray(),
+                    'is_wishlisted' => false, // TODO: Check if user has wishlisted
+                    'slug' => $product->slug,
+                ];
+            });
+
+        $featured = Product::with(['images', 'category'])
+            ->active()
+            ->featured()
+            ->limit(8)
+            ->get()
+            ->map(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'category' => $product->category->name,
+                    'price' => (float) $product->price,
+                    'original_price' => $product->compare_price ? (float) $product->compare_price : null,
+                    'rating' => (float) $product->rating,
+                    'review_count' => $product->review_count,
+                    'image' => $product->primary_image_url ?? 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
+                    'is_new' => $product->is_new,
+                    'discount' => $product->discount_percentage,
+                    'colors' => collect($product->colors ?? [])->pluck('hex')->toArray(),
+                    'is_wishlisted' => false, // TODO: Check if user has wishlisted
+                    'slug' => $product->slug,
+                ];
+            });
+
         return [
-            'new_arrivals' => [
-                [
-                    'id' => 1,
-                    'name' => 'Premium Cotton T-Shirt',
-                    'category' => "Men's Clothing",
-                    'price' => 29.99,
-                    'original_price' => 39.99,
-                    'rating' => 4.5,
-                    'review_count' => 128,
-                    'image' => 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
-                    'is_new' => true,
-                    'discount' => 25,
-                    'colors' => ['#000000', '#FFFFFF', '#1E3A8A', '#10B981'],
-                    'is_wishlisted' => false
-                ],
-                // Add more products...
-            ],
-            'best_sellers' => [
-                // Best selling products...
-            ],
-            'trending' => [
-                // Trending products...
-            ]
+            'new_arrivals' => $newArrivals,
+            'best_sellers' => $bestSellers,
+            'trending' => $featured, // Using featured as trending for now
         ];
     }
 
@@ -70,61 +123,81 @@ class HomeController extends Controller
      */
     private function getCategories(): array
     {
-        return [
-            [
-                'id' => 'mens',
-                'name' => "Men's Collection",
-                'description' => "Discover premium men's apparel and footwear",
-                'image' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop',
-                'product_count' => 500
-            ],
-            [
-                'id' => 'womens',
-                'name' => "Women's Collection",
-                'description' => "Elegant women's fashion and accessories",
-                'image' => 'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?w=600&h=400&fit=crop',
-                'product_count' => 450
-            ]
-        ];
+        return Category::active()
+            ->parents()
+            ->orderBy('sort_order')
+            ->get()
+            ->map(function ($category) {
+                return [
+                    'id' => $category->slug,
+                    'name' => $category->name,
+                    'description' => $category->description ?? "Discover premium {$category->name}",
+                    'image' => $category->image ?? ($category->gender === 'men'
+                        ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop'
+                        : 'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?w=600&h=400&fit=crop'),
+                    'product_count' => $category->activeProducts()->count(),
+                ];
+            })->toArray();
     }
 
     /**
-     * Get hero slides data
+     * Get hero slides data from database
      */
     private function getHeroSlides(): array
     {
-        return [
-            [
-                'id' => 1,
-                'title' => 'New Autumn Collection',
-                'subtitle' => "Discover the latest trends in men's and women's fashion",
-                'description' => 'Shop premium quality apparel with up to 40% off on selected items',
-                'image' => '/photo1.jpg',
-                'cta' => 'Shop Now',
-                'link' => '/product-list?category=new-arrivals',
-                'badge' => 'New Collection'
-            ],
-            [
-                'id' => 2,
-                'title' => 'Corporate Essentials',
-                'subtitle' => 'Professional attire for the modern workplace',
-                'description' => 'Elevate your professional wardrobe with our premium corporate collection',
-                'image' => '/photo2.jpg',
-                'cta' => 'Explore Corporate',
-                'link' => '/product-list?category=corporate',
-                'badge' => 'Professional'
-            ],
-            [
-                'id' => 3,
-                'title' => 'Footwear Sale',
-                'subtitle' => 'Step into comfort and style',
-                'description' => 'Premium shoes, sneakers, and sandals with free shipping on orders over $75',
-                'image' => '/photo3.jpg',
-                'cta' => 'Shop Footwear',
-                'link' => '/product-list?category=footwear',
-                'badge' => 'Free Shipping'
-            ]
-        ];
+        $heroImages = ProductImage::where('type', 'hero')
+            ->orderBy('sort_order')
+            ->get();
+
+        $slides = [];
+
+        foreach ($heroImages as $image) {
+            $slideData = [
+                'id' => $image->id,
+                'image' => asset($image->image_path),
+                'alt' => $image->alt_text,
+            ];
+
+            // Set slide content based on identifier
+            switch ($image->identifier) {
+                case 'hero1':
+                    $slideData = array_merge($slideData, [
+                        'title' => 'New Autumn Collection',
+                        'subtitle' => "Discover the latest trends in men's and women's fashion",
+                        'description' => 'Shop premium quality apparel with up to 40% off on selected items',
+                        'cta' => 'Shop Now',
+                        'link' => '/product-list?filter=new-arrivals',
+                        'badge' => 'New Collection'
+                    ]);
+                    break;
+
+                case 'hero2':
+                    $slideData = array_merge($slideData, [
+                        'title' => 'Corporate Essentials',
+                        'subtitle' => 'Professional attire for the modern workplace',
+                        'description' => 'Elevate your professional wardrobe with our premium corporate collection',
+                        'cta' => 'Explore Corporate',
+                        'link' => '/product-list?category=mens',
+                        'badge' => 'Professional'
+                    ]);
+                    break;
+
+                case 'hero3':
+                    $slideData = array_merge($slideData, [
+                        'title' => 'Footwear Sale',
+                        'subtitle' => 'Step into comfort and style',
+                        'description' => 'Premium shoes, sneakers, and sandals with free shipping on orders over $75',
+                        'cta' => 'Shop Footwear',
+                        'link' => '/product-list?category=womens',
+                        'badge' => 'Free Shipping'
+                    ]);
+                    break;
+            }
+
+            $slides[] = $slideData;
+        }
+
+        return $slides;
     }
 
     /**
@@ -132,8 +205,6 @@ class HomeController extends Controller
      */
     private function getCartCount($userId): int
     {
-        // Mock data - replace with actual cart count logic from your database
-        // Example: return CartItem::where('user_id', $userId)->sum('quantity');
-        return rand(0, 5); // Random count for demo purposes
+        return CartItem::where('user_id', $userId)->sum('quantity');
     }
 }

@@ -2,21 +2,14 @@ import React from 'react';
 import { Link } from '@inertiajs/react';
 import ProductCard from './ProductCard';
 import Button from '../../../components/ui/button';
-
-interface Product {
-  id: string | number;
-  name?: string;
-  price?: number;
-  image?: string;
-  description?: string;
-}
+import { Product } from '../../../types';
 
 interface FeaturedProductsProps {
   title: string;
   products: Product[];
   viewAllLink?: string;
-  onAddToWishlist: (product: Product) => void;
-  onAddToCart: (product: Product) => void;
+  onAddToWishlist: (productId: string | number, isWishlisted: boolean) => void;
+  onAddToCart: (productId: string | number) => void;
 }
 
 const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ title, products, viewAllLink, onAddToWishlist, onAddToCart }) => {

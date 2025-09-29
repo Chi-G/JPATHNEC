@@ -37,7 +37,7 @@ const SavedItems = ({ savedItems, onMoveToCart, onRemoveFromSaved }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {savedItems?.map((item) => (
           <div key={item?.id} className="bg-card border border-border rounded-lg overflow-hidden">
-            <Link to={`/product-detail?id=${item?.id}`}>
+            <Link to={`/products?id=${item?.id}`}>
               <div className="aspect-square overflow-hidden bg-muted">
                 <Image
                   src={item?.image}
@@ -49,7 +49,7 @@ const SavedItems = ({ savedItems, onMoveToCart, onRemoveFromSaved }) => {
 
             <div className="p-4">
               <Link
-                to={`/product-detail?id=${item?.id}`}
+                to={`/products?id=${item?.id}`}
                 className="font-medium text-foreground hover:text-primary transition-hover line-clamp-2 mb-2"
               >
                 {item?.name}

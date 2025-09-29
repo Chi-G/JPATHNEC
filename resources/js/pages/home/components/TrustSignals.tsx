@@ -74,7 +74,7 @@ const TrustSignals = () => {
     return Array.from({ length: 5 }, (_, index) => (
       <Icon
         key={index}
-        name="Star"
+        name="Star" 
         size={14}
         className={`${
           index < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'

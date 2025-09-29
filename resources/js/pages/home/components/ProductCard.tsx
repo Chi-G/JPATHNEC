@@ -3,19 +3,26 @@ import { Link } from '@inertiajs/react';
 import Image from '../../../components/AppImage';
 import Button from '../../../components/ui/button';
 import Icon from '../../../components/AppIcon';
+import { Product } from '../../../types';
 
-const ProductCard = ({ product, onAddToWishlist, onAddToCart }) => {
+interface ProductCardProps {
+  product: Product;
+  onAddToWishlist?: (productId: string | number, isWishlisted: boolean) => void;
+  onAddToCart?: (productId: string | number) => void;
+}
+
+const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToWishlist, onAddToCart }) => {
   const [isWishlisted, setIsWishlisted] = useState(product?.isWishlisted || false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  const handleWishlistToggle = (e) => {
+  const handleWishlistToggle = (e: React.MouseEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
     setIsWishlisted(!isWishlisted);
     onAddToWishlist?.(product?.id, !isWishlisted);
   };
 
-  const handleAddToCart = async (e) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
     setIsAddingToCart(true);
@@ -25,9 +32,9 @@ const ProductCard = ({ product, onAddToWishlist, onAddToCart }) => {
     } finally {
       setTimeout(() => setIsAddingToCart(false), 500);
     }
-  };
+  }; 
 
-  const renderStars = (rating) => {
+  const renderStars = (rating: number) => {
     const stars = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
@@ -56,7 +63,7 @@ const ProductCard = ({ product, onAddToWishlist, onAddToCart }) => {
 
   return (
     <div className="group relative bg-card rounded-lg overflow-hidden shadow-elevation-sm hover:shadow-elevation-md transition-all duration-300 hover:-translate-y-1">
-      <Link to={`/product-detail?id=${product?.id}`} className="block">
+      <Link href={`/products/${product?.id}`} className="block">
         {/* Product Image */}
         <div className="relative aspect-square overflow-hidden bg-muted">
           <Image
@@ -123,7 +130,7 @@ const ProductCard = ({ product, onAddToWishlist, onAddToCart }) => {
           {/* Rating */}
           <div className="flex items-center gap-2 mb-3">
             <div className="flex items-center gap-1">
-              {renderStars(product?.rating)}
+              {renderStars(product?.rating || 0)}
             </div>
             <span className="text-sm text-muted-foreground">
               ({product?.reviewCount})
@@ -135,7 +142,7 @@ const ProductCard = ({ product, onAddToWishlist, onAddToCart }) => {
             <span className="text-lg font-semibold text-foreground">
               ${product?.price}
             </span>
-            {product?.originalPrice && product?.originalPrice > product?.price && (
+            {product?.originalPrice && product?.originalPrice > (product?.price || 0) && (
               <span className="text-sm text-muted-foreground line-through">
                 ${product?.originalPrice}
               </span>

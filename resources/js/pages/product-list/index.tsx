@@ -553,7 +553,7 @@ const ProductList = ({ categoryProp, typeProp, searchProp, user, cartCount = 0 }
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header user={user} cartCount={cartCount} />
       <div className="container mx-auto px-8 md:px-12 lg:px-16 py-6">
         <div className="flex gap-6">
           {/* Filter Sidebar */}

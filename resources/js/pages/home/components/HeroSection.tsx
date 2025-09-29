@@ -13,18 +13,24 @@ interface HeroSlide {
   cta: string;
   link: string;
   badge?: string;
+  alt?: string;
 }
 
-const HeroSection: React.FC = () => {
+interface HeroSectionProps {
+  heroSlides?: HeroSlide[];
+}
+
+const HeroSection: React.FC<HeroSectionProps> = ({ heroSlides: propSlides }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const heroSlides: HeroSlide[] = [
+  // Fallback to static slides if no props provided
+  const defaultSlides: HeroSlide[] = [
     {
       id: 1,
       title: "New Autumn Collection",
       subtitle: "Discover the latest trends in men's and women's fashion",
       description: "Shop premium quality apparel with up to 40% off on selected items",
-      image: "/photo1.jpg",
+      image: "/images/hero/hero1.jpg",
       cta: "Shop Now",
       link: buildProductListUrl({ category: 'new-arrivals' }),
       badge: "New Collection"
@@ -34,7 +40,7 @@ const HeroSection: React.FC = () => {
       title: "Corporate Essentials",
       subtitle: "Professional attire for the modern workplace",
       description: "Elevate your professional wardrobe with our premium corporate collection",
-      image: "/photo2.jpg",
+      image: "/images/hero/hero2.jpg",
       cta: "Explore Corporate",
       link: buildProductListUrl({ category: 'corporate' }),
       badge: "Professional"
@@ -44,12 +50,14 @@ const HeroSection: React.FC = () => {
       title: "Footwear Sale",
       subtitle: "Step into comfort and style",
       description: "Premium shoes, sneakers, and sandals with free shipping on orders over $75",
-      image: "/photo3.jpg",
+      image: "/images/hero/hero3.jpg",
       cta: "Shop Footwear",
       link: buildProductListUrl({ category: 'footwear' }),
       badge: "Free Shipping"
     }
   ];
+
+  const heroSlides = propSlides && propSlides.length > 0 ? propSlides : defaultSlides;
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -86,7 +94,7 @@ const HeroSection: React.FC = () => {
               {/* Image with proper CSS classes */}
               <img
                 src={slide.image}
-                alt={slide.title}
+                alt={slide.alt || slide.title}
                 className="w-full h-full object-cover block"
               />
 

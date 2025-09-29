@@ -13,7 +13,7 @@ This guide explains how your React Router application has been converted to work
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/product-list', [ProductController::class, 'index'])->name('products.index');
-Route::get('/product-detail', [ProductController::class, 'show'])->name('products.show');
+Route::get('/products', [ProductController::class, 'show'])->name('products.show');
 Route::get('/shopping-cart', [ShoppingCartController::class, 'index'])->name('cart.index');
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 
@@ -37,7 +37,7 @@ Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('lo
 export const routes = {
   home: '/',
   productList: '/product-list',
-  productDetail: '/product-detail',
+  productDetail: '/products',
   shoppingCart: '/shopping-cart',
   checkout: '/checkout',
   // ... more routes
@@ -57,7 +57,7 @@ export const buildProductListUrl = (params?: { category?: string; filter?: strin
 - **Data:** Mock data (replace with database queries)
 
 ### ProductController
-- **Routes:** `/product-list`, `/product-detail`
+- **Routes:** `/product-list`, `/products`
 - **Returns:** Product listing and detail pages
 - **Handles:** Category filtering, search, product details
 

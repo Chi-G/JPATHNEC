@@ -97,7 +97,18 @@ const mockSavedItems = [
 //   'SUMMER25': { discount: 25, type: 'percentage', description: '25% summer discount' }
 // };
 
-const ShoppingCart = () => {
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface ShoppingCartProps {
+  user?: User | null;
+  cartCount?: number;
+}
+
+const ShoppingCart: React.FC<ShoppingCartProps> = ({ user, cartCount = 0 }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -191,7 +202,7 @@ const ShoppingCart = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <Header user={user} cartCount={cartCount} />
         <div className="container mx-auto px-8 md:px-12 lg:px-16 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
@@ -206,7 +217,7 @@ const ShoppingCart = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header user={user} cartCount={cartCount} />
       <div className="container mx-auto px-8 md:px-12 lg:px-16 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">

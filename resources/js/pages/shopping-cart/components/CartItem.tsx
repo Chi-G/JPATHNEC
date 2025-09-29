@@ -49,7 +49,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemoveItem, onMoveToWishlist }: Ca
       <div className="flex flex-col sm:flex-row gap-4">
         {/* Product Image */}
         <div className="flex-shrink-0">
-          <Link href={`/product-detail?id=${item?.id}`}>
+          <Link href={`/products?id=${item?.id}`}>
             <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg overflow-hidden bg-muted">
               <Image
                 src={item?.image}
@@ -65,7 +65,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemoveItem, onMoveToWishlist }: Ca
           <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
             <div className="flex-1">
               <Link
-                href={`/product-detail?id=${item?.id}`}
+                href={`/products?id=${item?.id}`}
                 className="text-lg font-semibold text-foreground hover:text-primary transition-hover line-clamp-2"
               >
                 {item?.name}

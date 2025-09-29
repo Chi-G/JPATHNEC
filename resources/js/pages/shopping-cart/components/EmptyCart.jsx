@@ -12,14 +12,14 @@ const EmptyCart = () => {
       price: 29.99,
       originalPrice: 39.99,
       image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop",
-      category: "Men\'s T-Shirts"
+      category: "Men's T-Shirts"
     },
     {
       id: 2,
       name: "Professional Polo Shirt",
       price: 49.99,
       image: "https://images.pexels.com/photos/8532616/pexels-photo-8532616.jpeg?w=300&h=300&fit=crop",
-      category: "Men\'s Polos"
+      category: "Men's Polos"
     },
     {
       id: 3,
@@ -27,14 +27,14 @@ const EmptyCart = () => {
       price: 89.99,
       originalPrice: 119.99,
       image: "https://images.pixabay.com/photo/2016/11/19/18/06/feet-1840619_1280.jpg?w=300&h=300&fit=crop",
-      category: "Men\'s Shoes"
+      category: "Men's Shoes"
     },
     {
       id: 4,
       name: "Women\'s Casual Shirt",
       price: 39.99,
       image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=300&h=300&fit=crop",
-      category: "Women\'s Shirts"
+      category: "Women's Shirts"
     }
   ];
 
@@ -75,7 +75,7 @@ const EmptyCart = () => {
           {featuredProducts?.map((product) => (
             <Link
               key={product?.id}
-              to={`/product-detail?id=${product?.id}`}
+              to={`/products?id=${product?.id}`}
               className="group"
             >
               <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-elevation-md transition-hover">

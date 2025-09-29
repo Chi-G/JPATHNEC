@@ -45,16 +45,18 @@ const ProductInfo = ({ product, onAddToCart, onToggleWishlist, isInWishlist }: P
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  const sizeOptions = product?.sizes?.map(size => ({
+  const sizeOptions = product?.sizes?.map((size, index) => ({
     value: size,
     label: size,
-    disabled: !product?.sizeAvailability?.[size]
+    disabled: !product?.sizeAvailability?.[size],
+    key: `${size}-${index}` // Ensure unique keys
   }));
 
-  const colorOptions = product?.colors?.map(color => ({
+  const colorOptions = product?.colors?.map((color, index) => ({
     value: color?.name,
     label: color?.name,
-    disabled: !color?.available
+    disabled: !color?.available,
+    key: `${color?.name}-${index}` // Ensure unique keys
   }));
 
   const handleQuantityChange = (change: number) => {
@@ -151,7 +153,7 @@ const ProductInfo = ({ product, onAddToCart, onToggleWishlist, isInWishlist }: P
           <SelectContent>
             {sizeOptions?.map((option) => (
               <SelectItem
-                key={option.value}
+                key={option.key}
                 value={option.value}
                 disabled={option.disabled}
               >
@@ -180,7 +182,7 @@ const ProductInfo = ({ product, onAddToCart, onToggleWishlist, isInWishlist }: P
           <SelectContent>
             {colorOptions?.map((option) => (
               <SelectItem
-                key={option.value}
+                key={option.key}
                 value={option.value}
                 disabled={option.disabled}
               >

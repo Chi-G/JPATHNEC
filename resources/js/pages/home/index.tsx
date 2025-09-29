@@ -54,7 +54,7 @@ interface HomeProps {
     best_sellers?: Product[];
     trending?: Product[];
   };
-  categories?: Category[];
+  categories?: Category[]; 
   hero_slides?: HeroSlide[];
   auth?: {
     user?: User | null;
@@ -62,7 +62,7 @@ interface HomeProps {
   cartCount?: number;
 }
 
-const Home: React.FC<HomeProps> = ({ featured_products, categories: _categories, hero_slides: _heroSlides, auth, cartCount = 0 }) => {
+const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, auth, cartCount = 0 }) => {
   const [cartItems, setCartItems] = useState<number[]>([]);
   const [wishlistItems, setWishlistItems] = useState<number[]>([]);
 
@@ -71,7 +71,7 @@ const Home: React.FC<HomeProps> = ({ featured_products, categories: _categories,
     {
       id: 1,
       name: "Premium Cotton T-Shirt",
-      category: "Men\\'s Clothing",
+      category: "Men's Clothing",
       price: 29.99,
       originalPrice: 39.99,
       rating: 4.5,
@@ -85,7 +85,7 @@ const Home: React.FC<HomeProps> = ({ featured_products, categories: _categories,
     {
       id: 2,
       name: "Professional Polo Shirt",
-      category: "Women\\'s Clothing",
+      category: "Women's Clothing",
       price: 34.99,
       rating: 4.8,
       reviewCount: 89,
@@ -97,7 +97,7 @@ const Home: React.FC<HomeProps> = ({ featured_products, categories: _categories,
     {
       id: 3,
       name: "Classic Running Sneakers",
-      category: "Men\\'s Footwear",
+      category: "Men's Footwear",
       price: 89.99,
       originalPrice: 119.99,
       rating: 4.6,
@@ -124,7 +124,7 @@ const Home: React.FC<HomeProps> = ({ featured_products, categories: _categories,
     {
       id: 5,
       name: "Corporate Dress Shirt",
-      category: "Men\\'s Corporate",
+      category: "Men's Corporate",
       price: 49.99,
       rating: 4.9,
       reviewCount: 342,
@@ -135,7 +135,7 @@ const Home: React.FC<HomeProps> = ({ featured_products, categories: _categories,
     {
       id: 6,
       name: "Comfortable Trousers",
-      category: "Women\\'s Clothing",
+      category: "Women's Clothing",
       price: 44.99,
       originalPrice: 54.99,
       rating: 4.7,
@@ -148,7 +148,7 @@ const Home: React.FC<HomeProps> = ({ featured_products, categories: _categories,
     {
       id: 7,
       name: "Athletic Shoes",
-      category: "Men\\'s Footwear",
+      category: "Men's Footwear",
       price: 79.99,
       rating: 4.5,
       reviewCount: 156,
@@ -159,7 +159,7 @@ const Home: React.FC<HomeProps> = ({ featured_products, categories: _categories,
     {
       id: 8,
       name: "Casual Slippers",
-      category: "Women\\'s Footwear",
+      category: "Women's Footwear",
       price: 24.99,
       rating: 4.3,
       reviewCount: 89,
@@ -186,7 +186,7 @@ const Home: React.FC<HomeProps> = ({ featured_products, categories: _categories,
     {
       id: 10,
       name: "Stylish Corporate Shirt",
-      category: "Women\\'s Corporate",
+      category: "Women's Corporate",
       price: 39.99,
       rating: 4.8,
       reviewCount: 167,
@@ -198,7 +198,7 @@ const Home: React.FC<HomeProps> = ({ featured_products, categories: _categories,
     {
       id: 11,
       name: "Premium Sneakers",
-      category: "Men\\'s Footwear",
+      category: "Men's Footwear",
       price: 129.99,
       rating: 4.9,
       reviewCount: 445,
@@ -209,7 +209,7 @@ const Home: React.FC<HomeProps> = ({ featured_products, categories: _categories,
     {
       id: 12,
       name: "Comfortable Sandals",
-      category: "Women\\'s Footwear",
+      category: "Women's Footwear",
       price: 49.99,
       rating: 4.4,
       reviewCount: 123,
@@ -219,20 +219,19 @@ const Home: React.FC<HomeProps> = ({ featured_products, categories: _categories,
     }
   ];
 
-  const handleAddToWishlist = (product: { id: string | number }) => {
-    const productId = typeof product.id === 'string' ? parseInt(product.id) : product.id;
-    const isCurrentlyWishlisted = wishlistItems.includes(productId);
+  const handleAddToWishlist = (productId: string | number, isWishlisted: boolean) => {
+    const id = typeof productId === 'string' ? parseInt(productId) : productId;
 
-    if (isCurrentlyWishlisted) {
-      setWishlistItems(prev => prev.filter(id => id !== productId));
+    if (isWishlisted) {
+      setWishlistItems(prev => [...prev, id]);
     } else {
-      setWishlistItems(prev => [...prev, productId]);
+      setWishlistItems(prev => prev.filter(itemId => itemId !== id));
     }
   };
 
-  const handleAddToCart = (product: { id: string | number }) => {
-    const productId = typeof product.id === 'string' ? parseInt(product.id) : product.id;
-    setCartItems(prev => [...prev, productId]);
+  const handleAddToCart = (productId: string | number) => {
+    const id = typeof productId === 'string' ? parseInt(productId) : productId;
+    setCartItems(prev => [...prev, id]);
   };
 
   useEffect(() => {
@@ -276,7 +275,7 @@ const Home: React.FC<HomeProps> = ({ featured_products, categories: _categories,
 
       <div className="min-h-screen bg-background">
         {/* Hero Section */}
-        <HeroSection />
+        <HeroSection heroSlides={hero_slides} />
 
         {/* New Arrivals */}
         <FeaturedProducts

@@ -8,7 +8,7 @@ export const routes = {
   // Public routes
   home: '/',
   productList: '/product-list',
-  productDetail: '/product-detail',
+  productDetail: '/products',
   shoppingCart: '/shopping-cart',
   checkout: '/checkout',
   checkoutSuccess: '/checkout/success',
@@ -44,7 +44,7 @@ export const buildProductListUrl = (params?: {
 
 // Helper function to build product detail URLs
 export const buildProductDetailUrl = (productId: string | number): string => {
-  return `${routes.productDetail}?id=${productId}`;
+  return `${routes.productDetail}/${productId}`;
 };
 
 // API endpoints for AJAX calls

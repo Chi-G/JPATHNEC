@@ -75,7 +75,7 @@ const EmptyCart = () => {
           {featuredProducts?.map((product) => (
             <Link
               key={product?.id}
-              href={`/product-detail?id=${product?.id}`}
+              href={`/products?id=${product?.id}`}
               className="group"
             >
               <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-elevation-md transition-hover">
