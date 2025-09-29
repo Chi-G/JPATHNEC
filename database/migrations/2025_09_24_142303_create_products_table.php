@@ -19,8 +19,8 @@ return new class extends Migration
             $table->text('short_description')->nullable();
             $table->string('sku')->unique();
             $table->decimal('price', 10, 2);
-            $table->decimal('compare_price', 10, 2)->nullable(); // Original price for discounts
-            $table->decimal('cost_price', 10, 2)->nullable(); // Cost for profit calculations
+            $table->decimal('compare_price', 10, 2)->nullable();
+            $table->decimal('cost_price', 10, 2)->nullable();
             $table->integer('stock_quantity')->default(0);
             $table->boolean('track_stock')->default(true);
             $table->boolean('is_active')->default(true);
@@ -31,24 +31,24 @@ return new class extends Migration
             // Product specifications
             $table->string('brand')->nullable();
             $table->string('material')->nullable();
-            $table->string('fit')->nullable(); // Regular, Slim, Loose, etc.
-            $table->string('origin')->nullable(); // Country of origin
-            $table->json('sizes')->nullable(); // Available sizes ["S", "M", "L", "XL"]
-            $table->json('colors')->nullable(); // Available colors with hex codes
-            $table->json('features')->nullable(); // Product features array
-            $table->json('care_instructions')->nullable(); // Care instructions array
-            $table->json('size_chart')->nullable(); // Size chart data
+            $table->string('fit')->nullable();
+            $table->string('origin')->nullable();
+            $table->json('sizes')->nullable();
+            $table->json('colors')->nullable();
+            $table->json('features')->nullable();
+            $table->json('care_instructions')->nullable();
+            $table->json('size_chart')->nullable();
 
             // SEO and Marketing
             $table->string('meta_title')->nullable();
             $table->text('meta_description')->nullable();
-            $table->json('tags')->nullable(); // Product tags for filtering
+            $table->json('tags')->nullable();
 
             // Relationships
             $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
 
             // Performance
-            $table->decimal('rating', 2, 1)->default(0); // Average rating
+            $table->decimal('rating', 2, 1)->default(0);
             $table->integer('review_count')->default(0);
             $table->integer('sales_count')->default(0);
             $table->integer('view_count')->default(0);

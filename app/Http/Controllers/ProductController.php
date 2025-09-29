@@ -203,7 +203,7 @@ class ProductController extends Controller
                     'slug' => $product->slug,
                 ];
             })
-            ->toArray();
+            ->toArray(); 
     }
 
     /**

@@ -6,7 +6,7 @@ import { Product } from '../../../types';
 
 interface FeaturedProductsProps {
   title: string;
-  products: Product[];
+  products: Product[]; 
   viewAllLink?: string;
   onAddToWishlist: (productId: string | number, isWishlisted: boolean) => void;
   onAddToCart: (productId: string | number) => void;

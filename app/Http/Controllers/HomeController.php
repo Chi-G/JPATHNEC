@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\CartItem;
 use App\Models\ProductImage;
+use App\Models\HeroSlide;
 use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
@@ -20,101 +21,77 @@ class HomeController extends Controller
     public function index(Request $request): Response
     {
         // Get cart count for authenticated users
-        $cartCount = 0;
-        if (Auth::check()) {
-            // Replace with actual cart count logic from your database
-            $cartCount = $this->getCartCount(Auth::id());
-        }
+        $cartCount = Auth::check() ? $this->getCartCount(Auth::id()) : 0;
 
         return Inertia::render('home/index', [
             'auth' => [
-                'user' => Auth::user()
+                'user' => Auth::user() ? [
+                    'id' => Auth::user()->id,
+                    'name' => Auth::user()->name,
+                    'email' => Auth::user()->email,
+                ] : null,
             ],
             'cartCount' => $cartCount,
-            'featured_products' => $this->getFeaturedProducts(),
+            'featured_products' => $this->getFeaturedProducts($request),
             'categories' => $this->getCategories(),
             'hero_slides' => $this->getHeroSlides(),
         ]);
     }
 
-    /**
+    /** 
      * Get featured products data
      */
-    private function getFeaturedProducts(): array
+    private function getFeaturedProducts(Request $request): array
     {
+        $user = $request->user();
+
+        $mapProduct = function ($product) use ($user) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'brand' => $product->brand,
+                'category' => $product->category ? $product->category->name : 'Uncategorized',
+                'price' => (float) $product->price,
+                'originalPrice' => $product->compare_price ? (float) $product->compare_price : null,
+                'rating' => (float) ($product->rating ?? 0),
+                'reviewCount' => $product->review_count ?? 0,
+                'image' => $product->primary_image_url ?? asset('images/placeholder-product.jpg'),
+                'isNew' => $product->is_new,
+                'isBestseller' => $product->is_bestseller,
+                'discount' => $product->discount_percentage,
+                'colors' => $product->colors ?? [],
+                'sizes' => $product->sizes ?? [],
+                'isWishlisted' => $user ? $product->wishlistUsers()->where('user_id', $user->id)->exists() : false,
+                'slug' => $product->slug,
+            ];
+        };
+
         $newArrivals = Product::with(['images', 'category'])
             ->active()
             ->new()
             ->limit(8)
             ->get()
-            ->map(function ($product) {
-                return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'category' => $product->category->name,
-                    'price' => (float) $product->price,
-                    'original_price' => $product->compare_price ? (float) $product->compare_price : null,
-                    'rating' => (float) $product->rating,
-                    'review_count' => $product->review_count,
-                    'image' => $product->primary_image_url ?? 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
-                    'is_new' => $product->is_new,
-                    'discount' => $product->discount_percentage,
-                    'colors' => collect($product->colors ?? [])->pluck('hex')->toArray(),
-                    'is_wishlisted' => false, // TODO: Check if user has wishlisted
-                    'slug' => $product->slug,
-                ];
-            });
+            ->map($mapProduct);
 
         $bestSellers = Product::with(['images', 'category'])
             ->active()
             ->bestseller()
+            ->orderBy('sales_count', 'desc')
             ->limit(8)
             ->get()
-            ->map(function ($product) {
-                return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'category' => $product->category->name,
-                    'price' => (float) $product->price,
-                    'original_price' => $product->compare_price ? (float) $product->compare_price : null,
-                    'rating' => (float) $product->rating,
-                    'review_count' => $product->review_count,
-                    'image' => $product->primary_image_url ?? 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
-                    'is_new' => $product->is_new,
-                    'discount' => $product->discount_percentage,
-                    'colors' => collect($product->colors ?? [])->pluck('hex')->toArray(),
-                    'is_wishlisted' => false, // TODO: Check if user has wishlisted
-                    'slug' => $product->slug,
-                ];
-            });
+            ->map($mapProduct);
 
-        $featured = Product::with(['images', 'category'])
+        $trending = Product::with(['images', 'category'])
             ->active()
-            ->featured()
+            ->orderBy('view_count', 'desc')
             ->limit(8)
             ->get()
-            ->map(function ($product) {
-                return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'category' => $product->category->name,
-                    'price' => (float) $product->price,
-                    'original_price' => $product->compare_price ? (float) $product->compare_price : null,
-                    'rating' => (float) $product->rating,
-                    'review_count' => $product->review_count,
-                    'image' => $product->primary_image_url ?? 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
-                    'is_new' => $product->is_new,
-                    'discount' => $product->discount_percentage,
-                    'colors' => collect($product->colors ?? [])->pluck('hex')->toArray(),
-                    'is_wishlisted' => false, // TODO: Check if user has wishlisted
-                    'slug' => $product->slug,
-                ];
-            });
+            ->map($mapProduct);
 
         return [
             'new_arrivals' => $newArrivals,
             'best_sellers' => $bestSellers,
-            'trending' => $featured, // Using featured as trending for now
+            'trending' => $trending,
         ];
     }
 
@@ -132,7 +109,7 @@ class HomeController extends Controller
                     'id' => $category->slug,
                     'name' => $category->name,
                     'description' => $category->description ?? "Discover premium {$category->name}",
-                    'image' => $category->image ?? ($category->gender === 'men'
+                    'image' => $category->image ? asset('storage/' . $category->image) : ($category->gender === 'men'
                         ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop'
                         : 'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?w=600&h=400&fit=crop'),
                     'product_count' => $category->activeProducts()->count(),
@@ -145,59 +122,22 @@ class HomeController extends Controller
      */
     private function getHeroSlides(): array
     {
-        $heroImages = ProductImage::where('type', 'hero')
+        return HeroSlide::where('is_active', true)
             ->orderBy('sort_order')
-            ->get();
-
-        $slides = [];
-
-        foreach ($heroImages as $image) {
-            $slideData = [
-                'id' => $image->id,
-                'image' => asset($image->image_path),
-                'alt' => $image->alt_text,
-            ];
-
-            // Set slide content based on identifier
-            switch ($image->identifier) {
-                case 'hero1':
-                    $slideData = array_merge($slideData, [
-                        'title' => 'New Autumn Collection',
-                        'subtitle' => "Discover the latest trends in men's and women's fashion",
-                        'description' => 'Shop premium quality apparel with up to 40% off on selected items',
-                        'cta' => 'Shop Now',
-                        'link' => '/product-list?filter=new-arrivals',
-                        'badge' => 'New Collection'
-                    ]);
-                    break;
-
-                case 'hero2':
-                    $slideData = array_merge($slideData, [
-                        'title' => 'Corporate Essentials',
-                        'subtitle' => 'Professional attire for the modern workplace',
-                        'description' => 'Elevate your professional wardrobe with our premium corporate collection',
-                        'cta' => 'Explore Corporate',
-                        'link' => '/product-list?category=mens',
-                        'badge' => 'Professional'
-                    ]);
-                    break;
-
-                case 'hero3':
-                    $slideData = array_merge($slideData, [
-                        'title' => 'Footwear Sale',
-                        'subtitle' => 'Step into comfort and style',
-                        'description' => 'Premium shoes, sneakers, and sandals with free shipping on orders over $75',
-                        'cta' => 'Shop Footwear',
-                        'link' => '/product-list?category=womens',
-                        'badge' => 'Free Shipping'
-                    ]);
-                    break;
-            }
-
-            $slides[] = $slideData;
-        }
-
-        return $slides;
+            ->get()
+            ->map(function ($slide) {
+                return [
+                    'id' => $slide->id,
+                    'title' => $slide->title,
+                    'subtitle' => $slide->subtitle,
+                    'description' => $slide->description,
+                    'image' => asset($slide->image),
+                    'cta' => $slide->cta,
+                    'link' => $slide->link,
+                    'badge' => $slide->badge,
+                    'alt' => $slide->alt_text,
+                ];
+            })->toArray();
     }
 
     /**

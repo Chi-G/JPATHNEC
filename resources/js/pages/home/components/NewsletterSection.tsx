@@ -142,7 +142,7 @@ const NewsletterSection: React.FC = () => {
                 type="submit"
                 loading={isLoading}
                 size="lg"
-                variant="secondary"
+                variant="secondary" 
                 className="w-full"
                 iconName="Mail"
                 iconPosition="left"

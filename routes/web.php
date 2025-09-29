@@ -14,6 +14,7 @@ Route::redirect('/home', '/', 301); // Redirect /home to / with permanent redire
 
 // Product routes
 Route::get('/product-list', [ProductController::class, 'index'])->name('products.index');
+Route::get('/product-list/{filter?}', [ProductController::class, 'index'])->name('product-list');
 Route::get('/products/{id}', [ProductController::class, 'show'])->name('products.show');
 
 // Shopping cart routes

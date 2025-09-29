@@ -211,10 +211,10 @@ const FilterSidebar = ({
               </div>
               <div className="flex flex-wrap gap-2">
                 {[
-                  { label: 'Under $25', min: 0, max: 25 },
-                  { label: '$25 - $50', min: 25, max: 50 },
-                  { label: '$50 - $100', min: 50, max: 100 },
-                  { label: 'Over $100', min: 100, max: null }
+                  { label: 'Under ₦10,000', min: 0, max: 10000 },
+                  { label: '₦11,000 - ₦15,000', min: 11000, max: 15000 },
+                  { label: '₦16,000 - ₦25,000', min: 16000, max: 25000 },
+                  { label: 'Over ₦25,000', min: 25000, max: null }
                 ]?.map((range, index) => (
                   <button
                     type="button"

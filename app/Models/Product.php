@@ -21,7 +21,7 @@ class Product extends Model
         'sku',
         'price',
         'compare_price',
-        'cost_price',
+        'cost_price', 
         'stock_quantity',
         'track_stock',
         'is_active',
