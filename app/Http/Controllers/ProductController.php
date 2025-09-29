@@ -19,9 +19,57 @@ class ProductController extends Controller
         $category = $request->query('category');
         $filter = $request->query('filter');
         $search = $request->query('search');
+        $sort = $request->query('sort', 'created_at');
+        $order = $request->query('order', 'desc');
+        $page = $request->query('page', 1);
+        $perPage = 12;
+
+        $query = Product::with(['images', 'category'])->active();
+
+        if ($category) {
+            $categoryModel = Category::where('slug', $category)->first();
+            if ($categoryModel) {
+                $query->where('category_id', $categoryModel->id);
+            }
+        }
+
+        if ($search) {
+            $query->search($search);
+        }
+
+        if ($filter === 'new-arrivals') {
+            $query->new();
+        } elseif ($filter === 'bestsellers') {
+            $query->bestseller();
+        } elseif ($filter === 'featured') {
+            $query->featured();
+        }
+
+        $products = $query->orderBy($sort, $order)
+            ->paginate($perPage, ['*'], 'page', $page)
+            ->withQueryString()
+            ->through(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'category' => $product->category->name,
+                    'price' => (float) $product->price,
+                    'original_price' => $product->compare_price ? (float) $product->compare_price : null,
+                    'rating' => (float) $product->rating,
+                    'review_count' => $product->review_count,
+                    'image' => $product->primary_image_url ?? asset('images/primary-image.jpg'),
+                    'is_new' => $product->is_new,
+                    'is_bestseller' => $product->is_bestseller,
+                    'discount' => $product->discount_percentage,
+                    'in_stock' => $product->inStock(),
+                    'slug' => $product->slug,
+                    'colors' => $product->colors ?? [],
+                    'sizes' => $product->sizes ?? [],
+                ];
+            });
 
         return Inertia::render('product-list/index', [
-            'products' => $this->getProducts($category, $filter, $search),
+            'products' => $products,
             'categories' => $this->getCategories(),
             'filters' => $this->getAvailableFilters(),
             'current_category' => $category,
@@ -61,11 +109,10 @@ class ProductController extends Controller
     /**
      * Get products based on filters
      */
-    private function getProducts($category = null, $filter = null, $search = null): array
+    private function getProducts($category = null, $filter = null, $search = null, $sort = 'created_at', $order = 'desc', $priceMin = null, $priceMax = null, $sizes = null, $brands = null, $colors = null): array
     {
         $query = Product::with(['images', 'category'])->active();
 
-        // Apply category filter
         if ($category) {
             $categoryModel = Category::where('slug', $category)->first();
             if ($categoryModel) {
@@ -73,12 +120,10 @@ class ProductController extends Controller
             }
         }
 
-        // Apply search filter
         if ($search) {
             $query->search($search);
         }
 
-        // Apply other filters
         if ($filter === 'new-arrivals') {
             $query->new();
         } elseif ($filter === 'bestsellers') {
@@ -87,7 +132,26 @@ class ProductController extends Controller
             $query->featured();
         }
 
-        return $query->orderBy('created_at', 'desc')
+        if ($priceMin !== null) {
+            $query->where('price', '>=', $priceMin);
+        }
+        if ($priceMax !== null) {
+            $query->where('price', '<=', $priceMax);
+        }
+        if ($sizes) {
+            $sizesArray = is_array($sizes) ? $sizes : explode(',', $sizes);
+            $query->whereJsonContains('sizes', $sizesArray);
+        }
+        if ($brands) {
+            $brandsArray = is_array($brands) ? $brands : explode(',', $brands);
+            $query->whereIn('brand', $brandsArray);
+        }
+        if ($colors) {
+            $colorsArray = is_array($colors) ? $colors : explode(',', $colors);
+            $query->whereJsonContains('colors', $colorsArray);
+        }
+
+        return $query->orderBy($sort, $order)
             ->paginate(12)
             ->through(function ($product) {
                 return [
@@ -98,7 +162,7 @@ class ProductController extends Controller
                     'original_price' => $product->compare_price ? (float) $product->compare_price : null,
                     'rating' => (float) $product->rating,
                     'review_count' => $product->review_count,
-                    'image' => $product->primary_image_url ?? 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
+                    'image' => $product->primary_image_url ?? asset('images/primary-image.jpg'),
                     'is_new' => $product->is_new,
                     'is_bestseller' => $product->is_bestseller,
                     'discount' => $product->discount_percentage,
@@ -203,7 +267,7 @@ class ProductController extends Controller
                     'slug' => $product->slug,
                 ];
             })
-            ->toArray(); 
+            ->toArray();
     }
 
     /**

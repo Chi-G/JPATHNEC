@@ -10,7 +10,7 @@ use App\Http\Controllers\CartController;
 
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::redirect('/home', '/', 301); // Redirect /home to / with permanent redirect
+Route::redirect('/home', '/', 301);
 
 // Product routes
 Route::get('/product-list', [ProductController::class, 'index'])->name('products.index');
@@ -35,4 +35,4 @@ Route::delete('/api/cart/{id}', [CartController::class, 'remove'])->name('api.ca
 Route::delete('/api/cart', [CartController::class, 'clear'])->name('api.cart.clear')->middleware('auth');
 
 require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__.'/auth.php'; 

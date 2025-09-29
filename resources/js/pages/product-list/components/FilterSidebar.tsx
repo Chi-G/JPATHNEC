@@ -18,6 +18,12 @@ interface FilterSidebarProps {
   onFilterChange: (filterType: keyof Filters, value: string[] | { min: string; max: string }) => void;
   onClearAll: () => void;
   productCount: number;
+  categories: { id: string; name: string; children: { id: string; name: string }[] }[];
+  availableFilters: {
+    price_ranges: { min: number; max: number | null; label: string }[];
+    sizes: string[];
+    colors: string[];
+  };
 }
 
 type SectionKey = 'category' | 'price' | 'size' | 'brand' | 'color';

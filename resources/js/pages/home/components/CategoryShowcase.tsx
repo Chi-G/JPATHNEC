@@ -13,7 +13,7 @@ interface FeaturedItem {
 interface CategoryShowcaseProps {
   categories: Category[];
 }
- 
+
 const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({ categories }) => {
   const additionalCategories = [
     { name: 'New Arrivals', icon: 'Sparkles', link: '/product-list/new' },
@@ -54,8 +54,8 @@ const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({ categories }) => {
                   <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8">
                     <div className="text-white">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm font-medium">
-                          {category.product_count}+ Products
+                        <span className="px-3 py-1 rounded-full text-sm font-medium bg-white/20">
+                          200+ Products
                         </span>
                       </div>
                       <h3 className="text-2xl md:text-3xl font-bold mb-2">{category.name}</h3>

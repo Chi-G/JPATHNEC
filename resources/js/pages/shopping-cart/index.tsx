@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from '@inertiajs/react';
+import React, { useState } from 'react';
+import { Link, router } from '@inertiajs/react';
+import toast from 'react-hot-toast';
 import Header from '../../components/ui/header';
 import CartItem from './components/CartItem';
 import OrderSummary from './components/OrderSummary';
@@ -10,14 +11,26 @@ import Button from '../../components/ui/button';
 
 interface CartItem {
   id: number;
-  name: string;
-  price: number;
-  originalPrice?: number;
+  product: {
+    id: number;
+    name: string;
+    slug: string;
+    image: string;
+    in_stock: boolean;
+  };
   quantity: number;
-  size: string;
-  color: string;
-  image: string;
-  category: string;
+  size: string | null;
+  color: string | null;
+  unit_price: number;
+  total_price: number;
+}
+
+interface CartSummary {
+  subtotal: number;
+  tax: number;
+  shipping: number;
+  total: number;
+  item_count: number;
 }
 
 interface SavedItem {
@@ -31,175 +44,104 @@ interface SavedItem {
   category: string;
 }
 
-// Mock cart data (moved outside component to prevent recreation on every render)
-const mockCartItems = [
-  {
-    id: 1,
-    name: "Premium Cotton T-Shirt - Classic Fit",
-    price: 29.99,
-    originalPrice: 39.99,
-    quantity: 2,
-    size: "L",
-    color: "Navy Blue",
-    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-    category: "Men's T-Shirts"
-  },
-  {
-    id: 2,
-    name: "Professional Polo Shirt - Business Casual",
-    price: 49.99,
-    quantity: 1,
-    size: "M",
-    color: "White",
-    image: "https://images.pexels.com/photos/8532616/pexels-photo-8532616.jpeg?w=400&h=400&fit=crop",
-    category: "Men's Polos"
-  },
-  {
-    id: 3,
-    name: "Athletic Running Sneakers - Performance Series",
-    price: 89.99,
-    originalPrice: 119.99,
-    quantity: 1,
-    size: "10",
-    color: "Black/White",
-    image: "https://images.pixabay.com/photo/2016/11/19/18/06/feet-1840619_1280.jpg?w=400&h=400&fit=crop",
-    category: "Men's Shoes"
-  }
-];
-
-const mockSavedItems = [
-  {
-    id: 4,
-    name: "Women's Casual Shirt - Relaxed Fit",
-    price: 39.99,
-    size: "S",
-    color: "Light Blue",
-    image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=400&fit=crop",
-    category: "Women's Shirts"
-  },
-  {
-    id: 5,
-    name: "Comfortable Sandals - Summer Collection",
-    price: 34.99,
-    originalPrice: 49.99,
-    size: "8",
-    color: "Brown",
-    image: "https://images.pexels.com/photos/1598505/pexels-photo-1598505.jpeg?w=400&h=400&fit=crop",
-    category: "Women's Sandals"
-  }
-];
-
-// Valid promo codes
-// const validPromoCodes = {
-//   'SAVE10': { discount: 10, type: 'percentage', description: '10% off your order' },
-//   'WELCOME20': { discount: 20, type: 'percentage', description: '20% off for new customers' },
-//   'FREESHIP': { discount: 9.99, type: 'fixed', description: 'Free shipping' },
-//   'SUMMER25': { discount: 25, type: 'percentage', description: '25% summer discount' }
-// };
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
-
 interface ShoppingCartProps {
-  user?: User | null;
+  cartItems: CartItem[];
+  cartSummary: CartSummary;
+  user?: { id: number; name: string; email: string } | null;
   cartCount?: number;
 }
 
-const ShoppingCart: React.FC<ShoppingCartProps> = ({ user, cartCount = 0 }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+const ShoppingCart: React.FC<ShoppingCartProps> = ({ cartItems, cartSummary, user, cartCount = 0 }) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [appliedPromoCode, setAppliedPromoCode] = useState<string | undefined>(undefined);
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [showSavedItems, setShowSavedItems] = useState(false);
+  const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
 
-  useEffect(() => {
-    // Simulate loading cart data
-    const loadCartData = async () => {
+  const handleUpdateQuantity = async (itemId: number, newQuantity: number) => {
+    if (!user) {
+      router.visit('/login');
+      return;
+    }
+
+    try {
       setIsLoading(true);
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setCartItems(mockCartItems);
-      setSavedItems(mockSavedItems);
+      const response = await fetch(`/api/cart/${itemId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ quantity: newQuantity }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(data.message || 'Cart updated successfully!');
+        router.reload({ only: ['cartItems', 'cartSummary', 'cartCount'] });
+      } else {
+        toast.error(data.message || 'Failed to update cart.');
+      }
+    } catch (error) {
+      toast.error('An error occurred while updating the cart.');
+      console.error('Update cart error:', error);
+    } finally {
       setIsLoading(false);
-    };
-
-    loadCartData();
-  }, []); // Now this is safe because mockCartItems and mockSavedItems are outside the component
-
-  // Calculate totals
-  const subtotal = cartItems?.reduce((sum, item) => sum + (item?.price * item?.quantity), 0);
-  const tax = subtotal * 0.08; // 8% tax
-  const shipping = subtotal >= 50 ? 0 : 9.99; // Free shipping over $50
-  const total = subtotal + tax + shipping - promoDiscount;
-  const itemCount = cartItems?.reduce((sum, item) => sum + item?.quantity, 0);
-
-  const handleUpdateQuantity = (itemId: number, newQuantity: number) => {
-    setCartItems(prevItems =>
-      prevItems?.map(item =>
-        item?.id === itemId ? { ...item, quantity: newQuantity } : item
-      )
-    );
+    }
   };
 
   const handleRemoveItem = async (itemId: number) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setCartItems(prevItems => prevItems?.filter(item => item?.id !== itemId));
+    if (!user) {
+      router.visit('/login');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/cart/${itemId}`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(data.message || 'Item removed from cart!');
+        router.reload({ only: ['cartItems', 'cartSummary', 'cartCount'] });
+      } else {
+        toast.error(data.message || 'Failed to remove item.');
+      }
+    } catch (error) {
+      toast.error('An error occurred while removing the item.');
+      console.error('Remove item error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleMoveToWishlist = async (itemId: number) => {
-    const itemToMove = cartItems?.find(item => item?.id === itemId);
-    if (itemToMove) {
-      // Remove from cart and add to saved items
-      setCartItems(prevItems => prevItems?.filter(item => item?.id !== itemId));
-      setSavedItems(prevItems => [...prevItems, { ...itemToMove, quantity: 1 }]);
-    }
+    // Placeholder: Implement wishlist API
+    toast.error('Wishlist functionality not implemented yet.');
   };
 
   const handleMoveToCart = async (itemId: number) => {
-    const itemToMove = savedItems?.find(item => item?.id === itemId);
-    if (itemToMove) {
-      // Remove from saved and add to cart
-      setSavedItems(prevItems => prevItems?.filter(item => item?.id !== itemId));
-      setCartItems(prevItems => [...prevItems, { ...itemToMove, quantity: 1 }]);
-    }
+    // Placeholder: Implement wishlist API
+    toast.error('Wishlist functionality not implemented yet.');
   };
 
   const handleRemoveFromSaved = (itemId: number) => {
-    setSavedItems(prevItems => prevItems?.filter(item => item?.id !== itemId));
+    // Placeholder: Implement wishlist API
+    toast.error('Wishlist functionality not implemented yet.');
   };
 
   const handleApplyPromoCode = async (code: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const promoInfo = validPromoCodes?.[code?.toUpperCase() as keyof typeof validPromoCodes];
-    if (promoInfo) {
-      setAppliedPromoCode(code?.toUpperCase());
-
-      if (promoInfo?.type === 'percentage') {
-        setPromoDiscount(subtotal * (promoInfo?.discount / 100));
-      } else {
-        setPromoDiscount(promoInfo?.discount);
-      }
-
-      return { success: true };
-    } else {
-      return { success: false, error: 'Invalid promo code' };
-    }
-  };
-  const validPromoCodes = {
-    'SAVE10': { discount: 10, type: 'percentage', description: '10% off your order' },
-    'WELCOME20': { discount: 20, type: 'percentage', description: '20% off for new customers' },
-    'FREESHIP': { discount: 9.99, type: 'fixed', description: 'Free shipping' },
-    'SUMMER25': { discount: 25, type: 'percentage', description: '25% summer discount' }
+    // Placeholder: Implement promo code API
+    toast.error('Promo code functionality not implemented yet.');
+    return { success: false, error: 'Promo codes not supported.' };
   };
 
-  if (isLoading) {
+  if (isLoading && !cartItems.length) {
     return (
       <div className="min-h-screen bg-background">
         <Header user={user} cartCount={cartCount} />
@@ -232,7 +174,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ user, cartCount = 0 }) => {
             <h1 className="text-3xl font-bold text-foreground">Shopping Cart</h1>
             {cartItems?.length > 0 && (
               <p className="text-muted-foreground mt-1">
-                {itemCount} {itemCount === 1 ? 'item' : 'items'} in your cart
+                {cartSummary.item_count} {cartSummary.item_count === 1 ? 'item' : 'items'} in your cart
               </p>
             )}
           </div>
@@ -284,11 +226,11 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ user, cartCount = 0 }) => {
             {/* Order Summary */}
             <div className="lg:col-span-1">
               <OrderSummary
-                subtotal={subtotal}
-                tax={tax}
-                shipping={shipping}
-                total={total}
-                itemCount={itemCount}
+                subtotal={cartSummary.subtotal}
+                tax={cartSummary.tax}
+                shipping={cartSummary.shipping}
+                total={cartSummary.total}
+                itemCount={cartSummary.item_count}
                 onApplyPromoCode={handleApplyPromoCode}
                 appliedPromoCode={appliedPromoCode}
                 promoDiscount={promoDiscount}

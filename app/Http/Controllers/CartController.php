@@ -16,7 +16,7 @@ class CartController extends Controller
     public function index()
     {
         $cartItems = $this->getCartItems();
-        
+
         return Inertia::render('shopping-cart/index', [
             'cartItems' => $cartItems,
             'cartSummary' => $this->getCartSummary($cartItems),
@@ -29,7 +29,7 @@ class CartController extends Controller
     public function add(Request $request)
     {
         $request->validate([
-            'product_id' => 'required|exists:products,id',
+            'product_id' => 'required|exists:products,id', 
             'quantity' => 'required|integer|min:1',
             'size' => 'nullable|string',
             'color' => 'nullable|string',
@@ -175,8 +175,7 @@ class CartController extends Controller
         if (!Auth::check()) {
             return 0;
         }
-        
+
         return CartItem::where('user_id', Auth::id())->sum('quantity');
     }
 }
- 

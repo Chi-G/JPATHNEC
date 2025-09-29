@@ -2,39 +2,19 @@ import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 import Button from '../../../components/ui/button';
+import type { Product } from '../../../types';
 
-interface Color {
-  name: string;
-  hex: string;
-}
-
-interface Product {
-  id: number;
-  name: string;
-  brand: string;
-  price: number;
-  originalPrice?: number;
-  rating: number;
-  reviewCount: number;
-  image: string;
-  isNew?: boolean;
-  isBestseller?: boolean;
-  discount?: number;
-  category: string;
-  gender: string;
-  sizes: string[];
-  colors: Color[];
-  isWishlisted: boolean;
+type CartItem = Product & {
   selectedSize?: string;
   selectedColor?: string;
-  quantity?: number;
-}
+  quantity: number;
+};
 
 interface QuickAddModalProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
-  onAddToCart: (product: Product) => void;
+  onAddToCart: (product: CartItem) => void;
 }
 
 const QuickAddModal = ({ product, isOpen, onClose, onAddToCart }: QuickAddModalProps) => {
@@ -45,21 +25,22 @@ const QuickAddModal = ({ product, isOpen, onClose, onAddToCart }: QuickAddModalP
   const handleAddToCart = () => {
     if (!product) return;
 
+    // If size is required but not selected, do not proceed
     if (product.sizes && product.sizes.length > 0 && !selectedSize) {
       return;
     }
+
+    // If color is required but not selected, do not proceed
     if (product.colors && product.colors.length > 0 && !selectedColor) {
       return;
     }
 
-    const productWithSelections: Product = {
+    onAddToCart({
       ...product,
       selectedSize,
       selectedColor,
       quantity
-    };
-
-    onAddToCart(productWithSelections);
+    });
 
     onClose();
     setSelectedSize('');
@@ -99,9 +80,9 @@ const QuickAddModal = ({ product, isOpen, onClose, onAddToCart }: QuickAddModalP
               <p className="text-lg font-semibold text-foreground">
                 ${product?.price?.toFixed(2)}
               </p>
-              {product?.originalPrice && product?.originalPrice > product?.price && (
+              {product?.originalPrice !== undefined && product?.price !== undefined && product.originalPrice > product.price && (
                 <p className="text-sm text-muted-foreground line-through">
-                  ${product?.originalPrice?.toFixed(2)}
+                  ${product.originalPrice.toFixed(2)}
                 </p>
               )}
             </div>
@@ -218,7 +199,7 @@ const QuickAddModal = ({ product, isOpen, onClose, onAddToCart }: QuickAddModalP
             iconName="ShoppingCart"
             iconPosition="left"
           >
-            Add to Cart - ${(product?.price * quantity)?.toFixed(2)}
+            Add to Cart - ${((product?.price ?? 0) * quantity).toFixed(2)}
           </Button>
 
           {/* Requirements Note */}

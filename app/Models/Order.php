@@ -61,7 +61,7 @@ class Order extends Model
                 $order->order_number = 'JP-' . strtoupper(Str::random(8));
             }
             if (empty($order->currency)) {
-                $order->currency = 'USD';
+                $order->currency = '₦';
             }
         });
     }

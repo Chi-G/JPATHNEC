@@ -68,6 +68,8 @@ export interface Product {
     sku?: string;
     slug?: string;
     featured?: boolean;
+    selectedColor?: string;
+    selectedSize?: string;
     created_at?: string;
     updated_at?: string;
 }
@@ -85,4 +87,24 @@ export interface Category {
     created_at: string;
     updated_at: string;
     product_count?: number;
+}
+
+export interface Product {
+  id: number;
+  name: string;
+  brand?: string;
+  price: number;
+  original_price?: number;
+  rating: number;
+  review_count: number;
+  image?: string;
+  is_new?: boolean;
+  is_bestseller?: boolean;
+  discount?: number;
+  category: string;
+  slug: string;
+  colors?: { name: string; hex: string }[];
+  sizes?: string[];
+  in_stock?: boolean;
+  selectedSize: string;
 }

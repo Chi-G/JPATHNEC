@@ -11,8 +11,8 @@ interface SortOption {
 interface SortControlsProps {
   sortBy: string;
   onSortChange: (sortValue: string) => void;
+  onViewModeChange: (viewMode: "grid" | "list") => void;
   viewMode: string;
-  onViewModeChange: (viewMode: string) => void;
   totalProducts: number;
   currentPage: number;
   productsPerPage: number;

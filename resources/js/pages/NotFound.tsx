@@ -24,21 +24,23 @@ const NotFound = () => {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button
-            variant="primary"
-            icon={<Icon name="ArrowLeft" />}
-            iconPosition="left"
+            variant="default"
             onClick={() => window.history?.back()}
           >
-            Go Back
+            <span className="flex items-center">
+              <Icon name="ArrowLeft" className="mr-2" />
+              Go Back
+            </span>
           </Button>
 
           <Button
             variant="outline"
-            icon={<Icon name="Home" />}
-            iconPosition="left"
             onClick={handleGoHome}
           >
-            Back to Home
+            <span className="flex items-center">
+              <Icon name="Home" className="mr-2" />
+              Back to Home
+            </span>
           </Button>
         </div>
       </div>
