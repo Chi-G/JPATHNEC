@@ -1,6 +1,13 @@
+
 # JPATHNEC - Fashion E-commerce Store
 
 A modern full-stack e-commerce platform for men's and women's clothing, built with Laravel backend and React frontend using Inertia.js for seamless SPA experience.
+
+---
+
+**Note:** This project is currently under active development. The live store will be available soon at [https://jpathnec.com](https://jpathnec.com).
+
+---
 
 ## 🚀 Features
 
