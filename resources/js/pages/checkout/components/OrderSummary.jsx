@@ -2,11 +2,11 @@ import React from 'react';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 
-const OrderSummary = ({ cartItems, formData, promoCode, setPromoCode, applyPromo }) => {
-  const subtotal = cartItems?.reduce((sum, item) => sum + (item?.price * item?.quantity), 0);
-  const deliveryFee = formData?.delivery?.price || 0;
+const OrderSummary = ({ cartItems, cartSummary, formData, promoCode, setPromoCode, applyPromo }) => {
+  const subtotal = cartSummary?.subtotal || 0;
+  const deliveryFee = formData?.delivery?.price || cartSummary?.shipping || 0;
   const discount = promoCode === 'SAVE10' ? subtotal * 0.1 : 0;
-  const tax = (subtotal - discount) * 0.08; // 8% tax
+  const tax = cartSummary?.tax || 0;
   const total = subtotal + deliveryFee - discount + tax;
 
   return (
@@ -19,8 +19,8 @@ const OrderSummary = ({ cartItems, formData, promoCode, setPromoCode, applyPromo
             <div className="relative">
               <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted">
                 <Image
-                  src={item?.image}
-                  alt={item?.name}
+                  src={item?.product?.image}
+                  alt={item?.product?.name}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -29,13 +29,13 @@ const OrderSummary = ({ cartItems, formData, promoCode, setPromoCode, applyPromo
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-medium text-foreground text-sm truncate">{item?.name}</div>
+              <div className="font-medium text-foreground text-sm truncate">{item?.product?.name}</div>
               <div className="text-xs text-muted-foreground">
-                {item?.size} | {item?.color}
+                {item?.size && `${item.size}`}{item?.size && item?.color && ' | '}{item?.color && `${item.color}`}
               </div>
             </div>
             <div className="text-sm font-medium text-foreground">
-              ${(item?.price * item?.quantity)?.toFixed(2)}
+              ${item?.total_price?.toFixed(2)}
             </div>
           </div>
         ))}

@@ -9,11 +9,76 @@ import OrderReview from './components/OrderReview';
 import OrderSummary from './components/OrderSummary';
 import Icon from '../../components/AppIcon';
 
-const Checkout = () => {
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface Product {
+  id: number;
+  name: string;
+  slug: string;
+  image: string;
+  price: number;
+  in_stock: boolean;
+}
+
+interface CartItem {
+  id: number;
+  product: Product;
+  quantity: number;
+  size?: string;
+  color?: string;
+  unit_price: number;
+  total_price: number;
+}
+
+interface CartSummary {
+  subtotal: number;
+  tax: number;
+  shipping: number;
+  total: number;
+  item_count: number;
+}
+
+interface ShippingOption {
+  id: string;
+  name: string;
+  price: number;
+  duration: string;
+}
+
+interface PaymentMethod {
+  id: string;
+  name: string;
+}
+
+interface CheckoutProps {
+  auth?: {
+    user?: User | null;
+  };
+  cartCount: number;
+  cartItems: CartItem[];
+  cartSummary: CartSummary;
+  shippingOptions: ShippingOption[];
+  paymentMethods: PaymentMethod[];
+}
+
+const Checkout: React.FC<CheckoutProps> = ({
+  auth,
+  cartCount,
+  cartItems,
+  cartSummary,
+  shippingOptions,
+  paymentMethods
+}) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [promoCode, setPromoCode] = useState('');
   const [formData, setFormData] = useState({
-    shipping: {},
+    shipping: {
+      country: 'NG' // Set default country
+    },
     delivery: {},
     payment: {}
   });
@@ -23,37 +88,6 @@ const Checkout = () => {
     { id: 'delivery', title: 'Delivery' },
     { id: 'payment', title: 'Payment' },
     { id: 'review', title: 'Review' }
-  ];
-
-  // Mock cart items
-  const cartItems = [
-    {
-      id: 1,
-      name: "Premium Cotton T-Shirt",
-      price: 29.99,
-      quantity: 2,
-      size: "M",
-      color: "Navy Blue",
-      image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop"
-    },
-    {
-      id: 2,
-      name: "Classic Polo Shirt",
-      price: 45.99,
-      quantity: 1,
-      size: "L",
-      color: "White",
-      image: "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=400&h=400&fit=crop"
-    },
-    {
-      id: 3,
-      name: "Running Sneakers",
-      price: 89.99,
-      quantity: 1,
-      size: "10",
-      color: "Black",
-      image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop"
-    }
   ];
 
   useEffect(() => {
@@ -107,6 +141,7 @@ const Checkout = () => {
             onBack={handleBack}
             formData={formData}
             setFormData={setFormData}
+            shippingOptions={shippingOptions}
           />
         );
       case 2:
@@ -116,6 +151,7 @@ const Checkout = () => {
             onBack={handleBack}
             formData={formData}
             setFormData={setFormData}
+            paymentMethods={paymentMethods}
           />
         );
       case 3:
@@ -134,7 +170,7 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header user={auth?.user} cartCount={cartCount} />
 
       <div className="container mx-auto px-8 md:px-12 lg:px-16 py-8">
         {/* Breadcrumb */}
@@ -173,6 +209,7 @@ const Checkout = () => {
           <div className="lg:col-span-1">
             <OrderSummary
               cartItems={cartItems}
+              cartSummary={cartSummary}
               formData={formData}
               promoCode={promoCode}
               setPromoCode={setPromoCode}
@@ -200,7 +237,7 @@ const Checkout = () => {
               </div>
               <h4 className="font-medium text-foreground">Fast Delivery</h4>
               <p className="text-sm text-muted-foreground">
-                Free standard delivery on orders over $75
+                Free standard delivery on orders over ₦25,000
               </p>
             </div>
 

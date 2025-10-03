@@ -24,9 +24,11 @@ Route::put('/cart/{item}', [ShoppingCartController::class, 'update'])->name('car
 Route::delete('/cart/{item}', [ShoppingCartController::class, 'destroy'])->name('cart.destroy');
 
 // Checkout routes
-Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+Route::middleware('auth')->group(function () {
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+});
 
 // API Routes for cart operations (AJAX)
 Route::post('/api/cart/add', [CartController::class, 'add'])->name('api.cart.add')->middleware('auth');

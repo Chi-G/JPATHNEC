@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\CartItem;
+use App\Models\Product;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -11,16 +14,32 @@ class CheckoutController extends Controller
     /**
      * Display checkout page
      */
-    public function index(Request $request): Response
+    public function index(Request $request)
     {
+        $cartItems = $this->getCartItems();
+
+        // Redirect to cart if no items
+        if (empty($cartItems)) {
+            return redirect()->route('cart')
+                ->with('error', 'Your cart is empty. Please add items before checkout.');
+        }
+
+        // Get cart count for authenticated users
+        $cartCount = Auth::check() ? $this->getCartCount() : 0;
+
         return Inertia::render('checkout/index', [
-            'cart_items' => $this->getCartItems($request),
-            'subtotal' => $this->calculateSubtotal($request),
-            'tax' => $this->calculateTax($request),
-            'shipping' => $this->calculateShipping($request),
-            'total' => $this->calculateTotal($request),
-            'shipping_options' => $this->getShippingOptions(),
-            'payment_methods' => $this->getPaymentMethods(),
+            'auth' => [
+                'user' => Auth::user() ? [
+                    'id' => Auth::user()->id,
+                    'name' => Auth::user()->name,
+                    'email' => Auth::user()->email,
+                ] : null,
+            ],
+            'cartCount' => $cartCount,
+            'cartItems' => $cartItems,
+            'cartSummary' => $this->getCartSummary($cartItems),
+            'shippingOptions' => $this->getShippingOptions(),
+            'paymentMethods' => $this->getPaymentMethods(),
         ]);
     }
 
@@ -55,56 +74,87 @@ class CheckoutController extends Controller
     /**
      * Get cart items for checkout
      */
-    private function getCartItems($request): array
+    private function getCartItems(): array
     {
-        // Similar to ShoppingCartController but for checkout
+        if (!Auth::check()) {
+            return [];
+        }
+
+        return CartItem::with(['product.images'])
+            ->where('user_id', Auth::id())
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'product' => [
+                        'id' => $item->product->id,
+                        'name' => $item->product->name,
+                        'slug' => $item->product->slug,
+                        'image' => $item->product->primary_image_url ?? 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
+                        'price' => (float) $item->product->price,
+                        'in_stock' => $item->product->inStock(),
+                    ],
+                    'quantity' => $item->quantity,
+                    'size' => $item->size,
+                    'color' => $item->color,
+                    'unit_price' => (float) $item->price,
+                    'total_price' => (float) $item->total_price,
+                ];
+            })
+            ->toArray();
+    }
+
+    /**
+     * Get cart summary
+     */
+    private function getCartSummary(array $cartItems): array
+    {
+        $subtotal = array_sum(array_column($cartItems, 'total_price'));
+        $tax = $subtotal * 0.1; // 10% tax
+        $shipping = $subtotal > 75 ? 0 : 9.99; // Free shipping over $75
+        $total = $subtotal + $tax + $shipping;
+
         return [
-            [
-                'id' => 1,
-                'product' => [
-                    'id' => 1,
-                    'name' => 'Premium Cotton T-Shirt',
-                    'price' => 29.99,
-                    'image' => 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop',
-                ],
-                'quantity' => 2,
-                'size' => 'M',
-                'color' => 'Black',
-                'subtotal' => 59.98,
-            ],
+            'subtotal' => round($subtotal, 2),
+            'tax' => round($tax, 2),
+            'shipping' => round($shipping, 2),
+            'total' => round($total, 2),
+            'item_count' => array_sum(array_column($cartItems, 'quantity')),
         ];
     }
 
     /**
      * Calculate subtotal
      */
-    private function calculateSubtotal($request): float
+    private function calculateSubtotal(array $cartItems): float
     {
-        return 59.98;
+        return round(array_sum(array_column($cartItems, 'total_price')), 2);
     }
 
     /**
      * Calculate tax
      */
-    private function calculateTax($request): float
+    private function calculateTax(array $cartItems): float
     {
-        return 5.40;
+        $subtotal = $this->calculateSubtotal($cartItems);
+        return round($subtotal * 0.1, 2); // 10% tax
     }
 
     /**
      * Calculate shipping
      */
-    private function calculateShipping($request): float
+    private function calculateShipping(array $cartItems): float
     {
-        return 9.99;
+        $subtotal = $this->calculateSubtotal($cartItems);
+        return $subtotal > 75 ? 0 : 9.99; // Free shipping over $75
     }
 
     /**
      * Calculate total
      */
-    private function calculateTotal($request): float
+    private function calculateTotal(array $cartItems): float
     {
-        return $this->calculateSubtotal($request) + $this->calculateTax($request) + $this->calculateShipping($request);
+        return $this->calculateSubtotal($cartItems) + $this->calculateTax($cartItems) + $this->calculateShipping($cartItems);
     }
 
     /**
@@ -157,5 +207,17 @@ class CheckoutController extends Controller
             'total' => 75.37,
             'items_count' => 2,
         ];
+    }
+
+    /**
+     * Get cart count
+     */
+    private function getCartCount(): int
+    {
+        if (!Auth::check()) {
+            return 0;
+        }
+
+        return CartItem::where('user_id', Auth::id())->sum('quantity');
     }
 }

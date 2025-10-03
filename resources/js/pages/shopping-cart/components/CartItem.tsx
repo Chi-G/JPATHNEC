@@ -6,14 +6,18 @@ import Button from '../../../components/ui/button';
 
 interface CartItemData {
   id: number;
-  name: string;
-  price: number;
-  originalPrice?: number;
+  product: {
+    id: number;
+    name: string;
+    slug: string;
+    image: string;
+    in_stock: boolean;
+  };
   quantity: number;
-  size: string;
-  color: string;
-  image: string;
-  category: string;
+  size: string | null;
+  color: string | null;
+  unit_price: number;
+  total_price: number;
 }
 
 interface CartItemProps {
@@ -49,11 +53,11 @@ const CartItem = ({ item, onUpdateQuantity, onRemoveItem, onMoveToWishlist }: Ca
       <div className="flex flex-col sm:flex-row gap-4">
         {/* Product Image */}
         <div className="flex-shrink-0">
-          <Link href={`/products?id=${item?.id}`}>
+          <Link href={`/products/${item?.product?.slug}`}>
             <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg overflow-hidden bg-muted">
               <Image
-                src={item?.image}
-                alt={item?.name}
+                src={item?.product?.image}
+                alt={item?.product?.name}
                 className="w-full h-full object-cover hover:scale-105 transition-hover"
               />
             </div>
@@ -65,10 +69,10 @@ const CartItem = ({ item, onUpdateQuantity, onRemoveItem, onMoveToWishlist }: Ca
           <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
             <div className="flex-1">
               <Link
-                href={`/products?id=${item?.id}`}
+                href={`/products/${item?.product?.slug}`}
                 className="text-lg font-semibold text-foreground hover:text-primary transition-hover line-clamp-2"
               >
-                {item?.name}
+                {item?.product?.name}
               </Link>
 
               <div className="flex flex-wrap gap-2 mt-2 text-sm text-muted-foreground">
@@ -81,11 +85,9 @@ const CartItem = ({ item, onUpdateQuantity, onRemoveItem, onMoveToWishlist }: Ca
               </div>
 
               <div className="flex items-center gap-2 mt-2">
-                <span className="text-lg font-bold text-primary">${item?.price?.toFixed(2)}</span>
-                {item?.originalPrice && item?.originalPrice > item?.price && (
-                  <span className="text-sm text-muted-foreground line-through">
-                    ${item?.originalPrice?.toFixed(2)}
-                  </span>
+                <span className="text-lg font-bold text-primary">${item?.unit_price?.toFixed(2)}</span>
+                {!item?.product?.in_stock && (
+                  <span className="text-sm text-destructive">Out of Stock</span>
                 )}
               </div>
             </div>
@@ -94,10 +96,10 @@ const CartItem = ({ item, onUpdateQuantity, onRemoveItem, onMoveToWishlist }: Ca
             <div className="flex flex-col items-end gap-2 sm:ml-4">
               <div className="text-right">
                 <div className="text-lg font-bold text-foreground">
-                  ${(item?.price * item?.quantity)?.toFixed(2)}
+                  ${item?.total_price?.toFixed(2)}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  ${item?.price?.toFixed(2)} each
+                  ${item?.unit_price?.toFixed(2)} each
                 </div>
               </div>
             </div>
@@ -165,7 +167,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemoveItem, onMoveToWishlist }: Ca
           <div className="bg-popover border border-border rounded-lg p-6 max-w-sm w-full">
             <h3 className="text-lg font-semibold text-foreground mb-2">Remove Item</h3>
             <p className="text-muted-foreground mb-4">
-              Are you sure you want to remove "{item?.name}" from your cart?
+              Are you sure you want to remove "{item?.product?.name}" from your cart?
             </p>
             <div className="flex gap-2 justify-end">
               <Button

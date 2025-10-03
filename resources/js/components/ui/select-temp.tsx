@@ -2,8 +2,8 @@
 import React, { useState } from "react";
 import { ChevronDown, Check, Search, X } from "lucide-react";
 import { cn } from "../../utils/cn";
-import Button from "./Button";
-import Input from "./Input";
+import Button from "./button";
+import Input from "./input";
 
 const Select = React.forwardRef(({
     className,
@@ -19,7 +19,7 @@ const Select = React.forwardRef(({
     error,
     searchable = false,
     clearable = false,
-    loading = false, 
+    loading = false,
     id,
     name,
     onChange,
@@ -34,7 +34,7 @@ const Select = React.forwardRef(({
 
     // Filter options based on search
     const filteredOptions = searchable && searchTerm
-        ? options?.filter(option =>
+        ? options?.filter((option: { label: string; value: { toString: () => string; }; }) =>
             option?.label?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
             (option?.value && option?.value?.toString()?.toLowerCase()?.includes(searchTerm?.toLowerCase()))
         )
@@ -45,13 +45,13 @@ const Select = React.forwardRef(({
         if (!value) return placeholder;
 
         if (multiple) {
-            const selectedOptions = options?.filter(opt => value?.includes(opt?.value));
+            const selectedOptions = options?.filter((opt: { value: string | number; }) => value?.includes(opt?.value));
             if (selectedOptions?.length === 0) return placeholder;
             if (selectedOptions?.length === 1) return selectedOptions?.[0]?.label;
             return `${selectedOptions?.length} items selected`;
         }
 
-        const selectedOption = options?.find(opt => opt?.value === value);
+        const selectedOption = options?.find((opt: { value: string | number; }) => opt?.value === value);
         return selectedOption ? selectedOption?.label : placeholder;
     };
 
@@ -66,11 +66,11 @@ const Select = React.forwardRef(({
         }
     };
 
-    const handleOptionSelect = (option) => {
+    const handleOptionSelect = (option: { value: string | number; }) => {
         if (multiple) {
             const newValue = value || [];
             const updatedValue = newValue?.includes(option?.value)
-                ? newValue?.filter(v => v !== option?.value)
+                ? newValue?.filter((v: string | number) => v !== option?.value)
                 : [...newValue, option?.value];
             onChange?.(updatedValue);
         } else {
@@ -80,16 +80,16 @@ const Select = React.forwardRef(({
         }
     };
 
-    const handleClear = (e) => {
+    const handleClear = (e: { stopPropagation: () => void; }) => {
         e?.stopPropagation();
         onChange?.(multiple ? [] : '');
     };
 
-    const handleSearchChange = (e) => {
+    const handleSearchChange = (e: { target: { value: React.SetStateAction<string>; }; }) => {
         setSearchTerm(e?.target?.value);
     };
 
-    const isSelected = (optionValue) => {
+    const isSelected = (optionValue: string | number) => {
         if (multiple) {
             return value?.includes(optionValue) || false;
         }
@@ -124,7 +124,7 @@ const Select = React.forwardRef(({
                     )}
                     onClick={handleToggle}
                     disabled={disabled}
-                    aria-expanded={isOpen}
+                    aria-expanded={isOpen ? true : false}
                     aria-haspopup="listbox"
                     {...props}
                 >
@@ -164,8 +164,11 @@ const Select = React.forwardRef(({
                     required={required}
                 >
                     <option value="">Select...</option>
-                    {options?.map(option => (
-                        <option key={option?.value} value={option?.value}>
+                    {options?.map((option: { value: React.Key | readonly string[] | null | undefined; label: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; }) => (
+                        <option
+                            key={option?.value ?? ''}
+                            value={option?.value !== null ? option?.value : ''}
+                        >
                             {option?.label}
                         </option>
                     ))}
@@ -194,18 +197,22 @@ const Select = React.forwardRef(({
                                     {searchTerm ? 'No options found' : 'No options available'}
                                 </div>
                             ) : (
-                                filteredOptions?.map((option) => (
+                                filteredOptions?.map((option: { value: React.Key | null | undefined; disabled?: boolean; label: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; description: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; }) => (
                                     <div
                                         key={option?.value}
                                         className={cn(
                                             "relative flex cursor-pointer select-none items-center rounded-sm px-3 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
-                                            isSelected(option?.value) && "bg-primary text-primary-foreground",
+                                            (option?.value !== undefined && option?.value !== null && (typeof option?.value === "string" || typeof option?.value === "number") && isSelected(option.value)) && "bg-primary text-primary-foreground",
                                             option?.disabled && "pointer-events-none opacity-50"
                                         )}
-                                        onClick={() => !option?.disabled && handleOptionSelect(option)}
+                                        onClick={() => {
+                                            if (!option?.disabled && (typeof option?.value === "string" || typeof option?.value === "number")) {
+                                                handleOptionSelect(option as { value: string | number });
+                                            }
+                                        }}
                                     >
                                         <span className="flex-1">{option?.label}</span>
-                                        {multiple && isSelected(option?.value) && (
+                                        {multiple && (option?.value !== undefined && option?.value !== null) && isSelected(option.value as string | number) && (
                                             <Check className="h-4 w-4" />
                                         )}
                                         {option?.description && (

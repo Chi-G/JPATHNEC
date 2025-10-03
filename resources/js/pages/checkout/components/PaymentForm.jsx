@@ -1,20 +1,29 @@
 import React, { useState } from 'react';
 import Input from '../../../components/ui/input';
-import { Select } from '../../../components/ui/select';
+import Select from '../../../components/ui/select-temp';
 import Button from '../../../components/ui/button';
 import { Checkbox } from '../../../components/ui/checkbox';
 import Icon from '../../../components/AppIcon';
 
-const PaymentForm = ({ onNext, onBack, formData, setFormData }) => {
+const PaymentForm = ({ onNext, onBack, formData, setFormData, paymentMethods }) => {
   const [errors, setErrors] = useState({});
-  const [paymentMethod, setPaymentMethod] = useState(formData?.payment?.method || 'card');
+  const [paymentMethod, setPaymentMethod] = useState(formData?.payment?.method || (paymentMethods?.[0]?.id || 'card'));
 
-  const cardTypes = [
-    { value: 'visa', label: 'Visa' },
-    { value: 'mastercard', label: 'Mastercard' },
-    { value: 'amex', label: 'American Express' },
-    { value: 'discover', label: 'Discover' }
+  // Use dynamic payment methods if provided, otherwise fallback to default ones
+  const availablePaymentMethods = paymentMethods?.length > 0 ? paymentMethods : [
+    { id: 'card', name: 'Credit/Debit Card' },
+    { id: 'paypal', name: 'PayPal' },
+    { id: 'apple_pay', name: 'Apple Pay' }
   ];
+
+  const getPaymentIcon = (methodId) => {
+    switch(methodId) {
+      case 'card': return 'CreditCard';
+      case 'paypal': return 'Wallet';
+      case 'apple_pay': return 'Smartphone';
+      default: return 'CreditCard';
+    }
+  };
 
   const expiryMonths = Array.from({ length: 12 }, (_, i) => ({
     value: String(i + 1)?.padStart(2, '0'),
@@ -98,42 +107,20 @@ const PaymentForm = ({ onNext, onBack, formData, setFormData }) => {
         <p className="text-muted-foreground mb-6">Choose your payment method</p>
       </div>
       <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div
-            className={`
-              p-4 border rounded-lg cursor-pointer transition-all duration-200 text-center
-              ${paymentMethod === 'card' ?'border-primary bg-primary/5' :'border-border hover:border-primary/50'
-              }
-            `}
-            onClick={() => setPaymentMethod('card')}
-          >
-            <Icon name="CreditCard" size={24} className="mx-auto mb-2" />
-            <div className="font-medium text-foreground">Credit Card</div>
-          </div>
-
-          <div
-            className={`
-              p-4 border rounded-lg cursor-pointer transition-all duration-200 text-center
-              ${paymentMethod === 'paypal' ?'border-primary bg-primary/5' :'border-border hover:border-primary/50'
-              }
-            `}
-            onClick={() => setPaymentMethod('paypal')}
-          >
-            <Icon name="Wallet" size={24} className="mx-auto mb-2" />
-            <div className="font-medium text-foreground">PayPal</div>
-          </div>
-
-          <div
-            className={`
-              p-4 border rounded-lg cursor-pointer transition-all duration-200 text-center
-              ${paymentMethod === 'apple' ?'border-primary bg-primary/5' :'border-border hover:border-primary/50'
-              }
-            `}
-            onClick={() => setPaymentMethod('apple')}
-          >
-            <Icon name="Smartphone" size={24} className="mx-auto mb-2" />
-            <div className="font-medium text-foreground">Apple Pay</div>
-          </div>
+        <div className={`grid grid-cols-1 ${availablePaymentMethods.length > 2 ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4`}>
+          {availablePaymentMethods.map((method) => (
+            <div
+              key={method.id}
+              className={`
+                p-4 border rounded-lg cursor-pointer transition-all duration-200 text-center
+                ${paymentMethod === method.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
+              `}
+              onClick={() => setPaymentMethod(method.id)}
+            >
+              <Icon name={getPaymentIcon(method.id)} size={24} className="mx-auto mb-2" />
+              <div className="font-medium text-foreground">{method.name}</div>
+            </div>
+          ))}
         </div>
       </div>
       {paymentMethod === 'card' && (
@@ -211,7 +198,7 @@ const PaymentForm = ({ onNext, onBack, formData, setFormData }) => {
           </Button>
         </div>
       )}
-      {paymentMethod === 'apple' && (
+      {paymentMethod === 'apple_pay' && (
         <div className="p-6 border border-border rounded-lg text-center">
           <Icon name="Smartphone" size={48} className="mx-auto mb-4 text-primary" />
           <h3 className="font-medium text-foreground mb-2">Apple Pay</h3>

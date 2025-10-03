@@ -2,32 +2,40 @@ import React, { useState } from 'react';
 import Button from '../../../components/ui/button';
 import Icon from '../../../components/AppIcon';
 
-const DeliveryOptions = ({ onNext, onBack, formData, setFormData }) => {
+const DeliveryOptions = ({ onNext, onBack, formData, setFormData, shippingOptions }) => {
   const [selectedOption, setSelectedOption] = useState(formData?.delivery?.option || 'standard');
 
-  const deliveryOptions = [
+  // Use dynamic shipping options if provided, otherwise fallback to default options
+  const deliveryOptions = shippingOptions?.length > 0 ? shippingOptions?.map(option => ({
+    id: option.id,
+    name: option.name,
+    description: `Delivered within ${option.duration}`,
+    price: option.price,
+    estimatedDate: new Date(Date.now() + (parseInt(option.duration) * 24 * 60 * 60 * 1000)).toLocaleDateString(),
+    icon: option.id === 'standard' ? 'Truck' : option.id === 'express' ? 'Zap' : 'Clock'
+  })) : [
     {
       id: 'standard',
       name: 'Standard Delivery',
-      description: 'Delivered within 5-7 business days',
+      description: 'Delivered within 3-5 business days',
       price: 0,
-      estimatedDate: 'Sep 28 - Oct 2, 2025',
+      estimatedDate: 'Oct 6 - Oct 10, 2025',
       icon: 'Truck'
     },
     {
       id: 'express',
       name: 'Express Delivery',
-      description: 'Delivered within 2-3 business days',
-      price: 9.99,
-      estimatedDate: 'Sep 24 - Sep 25, 2025',
+      description: 'Delivered within 1-2 business days',
+      price: 2500,
+      estimatedDate: 'Oct 4 - Oct 5, 2025',
       icon: 'Zap'
     },
     {
-      id: 'overnight',
-      name: 'Overnight Delivery',
-      description: 'Delivered by next business day',
-      price: 19.99,
-      estimatedDate: 'Sep 23, 2025',
+      id: 'same_day',
+      name: 'Same Day Delivery',
+      description: 'Delivered within Lagos and Abuja same day',
+      price: 5000,
+      estimatedDate: 'Oct 3, 2025',
       icon: 'Clock'
     }
   ];
@@ -84,7 +92,7 @@ const DeliveryOptions = ({ onNext, onBack, formData, setFormData }) => {
               </div>
               <div className="text-right">
                 <div className="text-lg font-semibold text-foreground">
-                  {option?.price === 0 ? 'FREE' : `$${option?.price?.toFixed(2)}`}
+                  {option?.price === 0 ? 'FREE' : `₦${option?.price?.toLocaleString()}`}
                 </div>
                 <div className={`
                   w-5 h-5 rounded-full border-2 mt-2 flex items-center justify-center
@@ -108,9 +116,10 @@ const DeliveryOptions = ({ onNext, onBack, formData, setFormData }) => {
             <h4 className="font-medium text-foreground mb-1">Delivery Information</h4>
             <ul className="text-sm text-muted-foreground space-y-1">
               <li>• All delivery times are estimates and may vary</li>
-              <li>• Signature required for orders over $100</li>
-              <li>• Free standard delivery on orders over $75</li>
-              <li>• Express and overnight delivery available Monday-Friday</li>
+              <li>• Signature required for orders over ₦50,000</li>
+              <li>• Free standard delivery on orders over ₦25,000</li>
+              <li>• Express and same-day delivery available in major cities</li>
+              <li>• Same-day delivery only available in Lagos and Abuja</li>
             </ul>
           </div>
         </div>

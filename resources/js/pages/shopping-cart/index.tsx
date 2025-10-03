@@ -66,11 +66,15 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cartItems, cartSummary, use
 
     try {
       setIsLoading(true);
+      // Get CSRF token from meta tag
+      const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      
       const response = await fetch(`/api/cart/${itemId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-CSRF-TOKEN': token || '',
         },
         body: JSON.stringify({ quantity: newQuantity }),
       });
@@ -98,10 +102,14 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cartItems, cartSummary, use
 
     try {
       setIsLoading(true);
+      // Get CSRF token from meta tag
+      const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      
       const response = await fetch(`/api/cart/${itemId}`, {
         method: 'DELETE',
         headers: {
           'Accept': 'application/json',
+          'X-CSRF-TOKEN': token || '',
         },
       });
 
@@ -120,22 +128,22 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cartItems, cartSummary, use
     }
   };
 
-  const handleMoveToWishlist = async (itemId: number) => {
+  const handleMoveToWishlist = async (_itemId: number) => {
     // Placeholder: Implement wishlist API
     toast.error('Wishlist functionality not implemented yet.');
   };
 
-  const handleMoveToCart = async (itemId: number) => {
+  const handleMoveToCart = async (_itemId: number) => {
     // Placeholder: Implement wishlist API
     toast.error('Wishlist functionality not implemented yet.');
   };
 
-  const handleRemoveFromSaved = (itemId: number) => {
+  const handleRemoveFromSaved = (_itemId: number) => {
     // Placeholder: Implement wishlist API
     toast.error('Wishlist functionality not implemented yet.');
   };
 
-  const handleApplyPromoCode = async (code: string) => {
+  const handleApplyPromoCode = async (_code: string) => {
     // Placeholder: Implement promo code API
     toast.error('Promo code functionality not implemented yet.');
     return { success: false, error: 'Promo codes not supported.' };

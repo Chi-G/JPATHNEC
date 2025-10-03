@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import Button from '../../../components/ui/button';
 import Input from '../../../components/ui/input';
 import Icon from '../../../components/AppIcon';
@@ -7,14 +7,6 @@ import Icon from '../../../components/AppIcon';
 interface PromoResult {
   success: boolean;
   error?: string;
-}
-
-interface ShippingOption {
-  id: string;
-  name: string;
-  price: number;
-  duration: string;
-  description: string;
 }
 
 interface OrderSummaryProps {
@@ -31,8 +23,8 @@ interface OrderSummaryProps {
 const OrderSummary: React.FC<OrderSummaryProps> = ({
   subtotal,
   tax,
-//   shipping,
-//   total,
+  shipping,
+  total,
   itemCount,
   onApplyPromoCode,
   appliedPromoCode,
@@ -41,31 +33,6 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   const [promoCode, setPromoCode] = useState('');
   const [promoError, setPromoError] = useState('');
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
-  const [selectedShipping, setSelectedShipping] = useState('standard');
-
-  const shippingOptions: ShippingOption[] = [
-    {
-      id: 'standard',
-      name: 'Standard Shipping',
-      price: 0,
-      duration: '5-7 business days',
-      description: 'Free standard shipping on orders over $50'
-    },
-    {
-      id: 'express',
-      name: 'Express Shipping',
-      price: 9.99,
-      duration: '2-3 business days',
-      description: 'Faster delivery for urgent orders'
-    },
-    {
-      id: 'overnight',
-      name: 'Overnight Shipping',
-      price: 24.99,
-      duration: '1 business day',
-      description: 'Next day delivery available'
-    }
-  ];
 
   const handleApplyPromoCode = async () => {
     if (!promoCode.trim()) {
@@ -90,13 +57,12 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
     }
   };
 
-  const handleShippingChange = (shippingId: string) => {
-    setSelectedShipping(shippingId);
+  const handleProceedToCheckout = () => {
+    // Set session storage to indicate user came from cart
+    sessionStorage.setItem('fromCart', 'true');
+    // Navigate to checkout
+    router.visit('/checkout');
   };
-
-  const selectedShippingOption = shippingOptions.find(option => option.id === selectedShipping);
-  const finalShipping = selectedShippingOption?.price || 0;
-  const finalTotal = subtotal - (promoDiscount || 0) + tax + finalShipping;
 
   return (
     <div className="bg-card border border-border rounded-lg p-6 sticky top-4">
@@ -107,7 +73,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           <span className="text-muted-foreground">
             Subtotal ({itemCount} {itemCount === 1 ? 'item' : 'items'})
           </span>
-          <span className="text-foreground font-medium">${subtotal.toFixed(2)}</span>
+          <span className="text-foreground font-medium">₦{subtotal.toLocaleString()}</span>
         </div>
 
         {appliedPromoCode && promoDiscount && promoDiscount > 0 && (
@@ -115,26 +81,26 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             <span className="text-success">
               Promo ({appliedPromoCode})
             </span>
-            <span className="text-success font-medium">-${promoDiscount.toFixed(2)}</span>
+            <span className="text-success font-medium">-₦{promoDiscount.toLocaleString()}</span>
           </div>
         )}
 
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Estimated Tax</span>
-          <span className="text-foreground font-medium">${tax.toFixed(2)}</span>
+          <span className="text-foreground font-medium">₦{tax.toLocaleString()}</span>
         </div>
 
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Shipping</span>
           <span className="text-foreground font-medium">
-            {finalShipping === 0 ? 'FREE' : `$${finalShipping.toFixed(2)}`}
+            {(shipping || 0) === 0 ? 'FREE' : `₦${(shipping || 0).toLocaleString()}`}
           </span>
         </div>
 
         <div className="border-t border-border pt-3">
           <div className="flex justify-between">
             <span className="text-lg font-semibold text-foreground">Total</span>
-            <span className="text-lg font-bold text-primary">${finalTotal.toFixed(2)}</span>
+            <span className="text-lg font-bold text-primary">₦{(total || (subtotal + tax + (shipping || 0) - (promoDiscount || 0))).toLocaleString()}</span>
           </div>
         </div>
       </div>
@@ -163,46 +129,16 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           )}
         </div>
       )}
-      {/* Shipping Options */}
-      <div className="mb-6">
-        <h3 className="text-sm font-medium text-foreground mb-3">Shipping Options</h3>
-        <div className="space-y-2">
-          {shippingOptions.map((option: ShippingOption) => (
-            <label
-              key={option.id}
-              className="flex items-start gap-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-hover"
-            >
-              <input
-                type="radio"
-                name="shipping"
-                value={option.id}
-                checked={selectedShipping === option.id}
-                onChange={() => handleShippingChange(option.id)}
-                className="mt-1"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="font-medium text-foreground">{option.name}</div>
-                    <div className="text-sm text-muted-foreground">{option.duration}</div>
-                    <div className="text-xs text-muted-foreground mt-1">{option.description}</div>
-                  </div>
-                  <div className="text-sm font-medium text-foreground ml-2">
-                    {option.price === 0 ? 'FREE' : `$${option.price.toFixed(2)}`}
-                  </div>
-                </div>
-              </div>
-            </label>
-          ))}
-        </div>
-      </div>
       {/* Checkout Button */}
-      <Link href="/checkout" className="block">
-        <Button variant="default" fullWidth className="mb-4">
-          <Icon name="CreditCard" size={18} className="mr-2" />
-          Proceed to Checkout
-        </Button>
-      </Link>
+      <Button
+        variant="default"
+        fullWidth
+        className="mb-4"
+        onClick={handleProceedToCheckout}
+      >
+        <Icon name="CreditCard" size={18} className="mr-2" />
+        Proceed to Checkout
+      </Button>
       {/* Continue Shopping */}
       <Link href="/product-list">
         <Button variant="outline" fullWidth>

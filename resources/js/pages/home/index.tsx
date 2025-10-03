@@ -55,11 +55,15 @@ const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories,
     }
 
     try {
+      // Get CSRF token from meta tag
+      const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      
       const response = await fetch('/api/cart/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-CSRF-TOKEN': token || '',
         },
         body: JSON.stringify({
           product_id: product.id,
