@@ -181,6 +181,9 @@ const ProductList: React.FC<ProductListProps> = ({
       if (response.ok) {
         toast.success(data.message || 'Product added to cart!');
         router.reload({ only: ['cartCount'] }); // Refresh cartCount prop
+      } else if (response.status === 409) {
+        // 409 Conflict - item already exists
+        toast.error(data.message || 'This item is already in your cart.');
       } else {
         toast.error(data.message || 'Failed to add product to cart.');
       }
@@ -221,6 +224,9 @@ const ProductList: React.FC<ProductListProps> = ({
         toast.success(data.message || 'Product added to cart!');
         router.reload({ only: ['cartCount'] }); // Refresh cartCount prop
         setQuickAddProduct(null);
+      } else if (response.status === 409) {
+        // 409 Conflict - item already exists
+        toast.error(data.message || 'This item is already in your cart.');
       } else {
         toast.error(data.message || 'Failed to add product to cart.');
       }

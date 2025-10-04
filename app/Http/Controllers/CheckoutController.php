@@ -40,6 +40,7 @@ class CheckoutController extends Controller
             'cartSummary' => $this->getCartSummary($cartItems),
             'shippingOptions' => $this->getShippingOptions(),
             'paymentMethods' => $this->getPaymentMethods(),
+            'paystack_public_key' => env('PAYSTACK_PUBLIC_KEY'),
         ]);
     }
 
@@ -62,12 +63,97 @@ class CheckoutController extends Controller
     }
 
     /**
+     * Display order success page
+     */
+    public function orderSuccess(\App\Models\Order $order)
+    {
+        // Ensure the order belongs to the authenticated user
+        if ($order->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access to order');
+        }
+
+        // Load order with relationships
+        $order->load(['items']);
+
+        return Inertia::render('Checkout/Success', [
+            'order' => [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+                'total_amount' => $order->total_amount,
+                'payment_reference' => $order->payment_reference,
+                'status' => $order->status,
+                'payment_status' => $order->payment_status,
+                'created_at' => $order->created_at->toISOString(),
+                'shipping_address' => $order->shipping_address ? [
+                    'full_name' => $order->shipping_address['fullName'] ?? $order->shipping_address['full_name'] ?? '',
+                    'address_line_1' => $order->shipping_address['address'] ?? $order->shipping_address['address_line_1'] ?? '',
+                    'address_line_2' => $order->shipping_address['address_line_2'] ?? '',
+                    'city' => $order->shipping_address['city'] ?? '',
+                    'state' => $order->shipping_address['state'] ?? '',
+                    'postal_code' => $order->shipping_address['zipCode'] ?? $order->shipping_address['postal_code'] ?? '',
+                    'phone' => $order->shipping_address['phone'] ?? '',
+                ] : null,
+                'items' => $order->items->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'product_name' => $item->product_name,
+                        'quantity' => $item->quantity,
+                        'price' => $item->unit_price,
+                        'total' => $item->total_price,
+                    ];
+                })->toArray(),
+            ],
+        ]);
+    }
+
+    /**
      * Display checkout success page
      */
-    public function success(): Response
+    public function success(Request $request)
     {
+        $orderNumber = $request->query('order');
+        
+        if (!$orderNumber) {
+            return redirect()->route('home')->with('error', 'Invalid order reference');
+        }
+
+        $order = \App\Models\Order::where('order_number', $orderNumber)
+            ->where('user_id', Auth::id())
+            ->with('items')
+            ->first();
+
+        if (!$order) {
+            return redirect()->route('home')->with('error', 'Order not found');
+        }
+
         return Inertia::render('checkout/success', [
-            'order' => $this->getLastOrder(),
+            'order' => [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+                'total_amount' => $order->total_amount,
+                'payment_reference' => $order->payment_reference,
+                'status' => $order->status,
+                'payment_status' => $order->payment_status,
+                'created_at' => $order->created_at->toISOString(),
+                'shipping_address' => $order->shipping_address ? [
+                    'full_name' => $order->shipping_address['fullName'] ?? $order->shipping_address['full_name'] ?? '',
+                    'address_line_1' => $order->shipping_address['address'] ?? $order->shipping_address['address_line_1'] ?? '',
+                    'address_line_2' => $order->shipping_address['address_line_2'] ?? '',
+                    'city' => $order->shipping_address['city'] ?? '',
+                    'state' => $order->shipping_address['state'] ?? '',
+                    'postal_code' => $order->shipping_address['zipCode'] ?? $order->shipping_address['postal_code'] ?? '',
+                    'phone' => $order->shipping_address['phone'] ?? '',
+                ] : null,
+                'items' => $order->items->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'product_name' => $item->product_name,
+                        'quantity' => $item->quantity,
+                        'price' => $item->unit_price,
+                        'total' => $item->total_price,
+                    ];
+                })->toArray(),
+            ],
         ]);
     }
 
@@ -111,7 +197,7 @@ class CheckoutController extends Controller
     {
         $subtotal = array_sum(array_column($cartItems, 'total_price'));
         $tax = $subtotal * 0.1; // 10% tax
-        $shipping = $subtotal > 75 ? 0 : 9.99; // Free shipping over $75
+        $shipping = $subtotal > 75 ? 0 : 9.99; // Free shipping over ₦75
         $total = $subtotal + $tax + $shipping;
 
         return [

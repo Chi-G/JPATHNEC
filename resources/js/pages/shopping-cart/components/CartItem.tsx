@@ -85,7 +85,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemoveItem, onMoveToWishlist }: Ca
               </div>
 
               <div className="flex items-center gap-2 mt-2">
-                <span className="text-lg font-bold text-primary">${item?.unit_price?.toFixed(2)}</span>
+                <span className="text-lg font-bold text-primary">₦{item?.unit_price?.toFixed(2)}</span>
                 {!item?.product?.in_stock && (
                   <span className="text-sm text-destructive">Out of Stock</span>
                 )}
@@ -96,10 +96,10 @@ const CartItem = ({ item, onUpdateQuantity, onRemoveItem, onMoveToWishlist }: Ca
             <div className="flex flex-col items-end gap-2 sm:ml-4">
               <div className="text-right">
                 <div className="text-lg font-bold text-foreground">
-                  ${item?.total_price?.toFixed(2)}
+                  ₦{item?.total_price?.toFixed(2)}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  ${item?.unit_price?.toFixed(2)} each
+                  ₦{item?.unit_price?.toFixed(2)} each
                 </div>
               </div>
             </div>

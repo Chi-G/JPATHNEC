@@ -120,7 +120,7 @@ const Header: React.FC<HeaderProps> = ({ user = null, cartCount = 0 }) => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 text-xl font-bold text-primary">
-            <Icon name="ShoppingBag" size={28} className="text-primary" />
+            <img src="/logo.png" alt="JPATHNEC Logo" width={28} height={28} className="text-primary" />
             <span className="font-inter font-bold">JPATHNEC</span>
           </Link>
 

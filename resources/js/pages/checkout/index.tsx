@@ -8,51 +8,7 @@ import PaymentForm from './components/PaymentForm';
 import OrderReview from './components/OrderReview';
 import OrderSummary from './components/OrderSummary';
 import Icon from '../../components/AppIcon';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
-
-interface Product {
-  id: number;
-  name: string;
-  slug: string;
-  image: string;
-  price: number;
-  in_stock: boolean;
-}
-
-interface CartItem {
-  id: number;
-  product: Product;
-  quantity: number;
-  size?: string;
-  color?: string;
-  unit_price: number;
-  total_price: number;
-}
-
-interface CartSummary {
-  subtotal: number;
-  tax: number;
-  shipping: number;
-  total: number;
-  item_count: number;
-}
-
-interface ShippingOption {
-  id: string;
-  name: string;
-  price: number;
-  duration: string;
-}
-
-interface PaymentMethod {
-  id: string;
-  name: string;
-}
+import { CheckoutFormData, CartItem, CartSummary, ShippingOption, PaymentMethod, User } from '../../types';
 
 interface CheckoutProps {
   auth?: {
@@ -63,6 +19,7 @@ interface CheckoutProps {
   cartSummary: CartSummary;
   shippingOptions: ShippingOption[];
   paymentMethods: PaymentMethod[];
+  paystack_public_key?: string;
 }
 
 const Checkout: React.FC<CheckoutProps> = ({
@@ -71,11 +28,12 @@ const Checkout: React.FC<CheckoutProps> = ({
   cartItems,
   cartSummary,
   shippingOptions,
-  paymentMethods
+  paymentMethods,
+  paystack_public_key
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [promoCode, setPromoCode] = useState('');
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CheckoutFormData>({
     shipping: {
       country: 'NG' // Set default country
     },
@@ -86,8 +44,8 @@ const Checkout: React.FC<CheckoutProps> = ({
   const steps = [
     { id: 'shipping', title: 'Shipping' },
     { id: 'delivery', title: 'Delivery' },
-    { id: 'payment', title: 'Payment' },
-    { id: 'review', title: 'Review' }
+    { id: 'review', title: 'Review' },
+    { id: 'payment', title: 'Payment' }
   ];
 
   useEffect(() => {
@@ -146,21 +104,24 @@ const Checkout: React.FC<CheckoutProps> = ({
         );
       case 2:
         return (
-          <PaymentForm
-            onNext={handleNext}
-            onBack={handleBack}
-            formData={formData}
-            setFormData={setFormData}
-            paymentMethods={paymentMethods}
-          />
-        );
-      case 3:
-        return (
           <OrderReview
             onNext={handleNext}
             onBack={handleBack}
             formData={formData}
             cartItems={cartItems}
+            cartSummary={cartSummary}
+          />
+        );
+      case 3:
+        return (
+          <PaymentForm
+            onBack={handleBack}
+            formData={formData}
+            setFormData={setFormData}
+            paymentMethods={paymentMethods}
+            cartSummary={cartSummary}
+            auth={auth}
+            paystack_public_key={paystack_public_key}
           />
         );
       default:

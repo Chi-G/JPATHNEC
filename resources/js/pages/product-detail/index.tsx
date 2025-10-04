@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from '@inertiajs/react';
+import toast from 'react-hot-toast';
 import Header from '../../components/ui/header';
 import Icon from '../../components/AppIcon';
 import ImageCarousel from './components/ImageCarousel';
@@ -165,13 +166,52 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 
 
   const handleAddToCart = async (cartItem: CartItem) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    // Log cart item for development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Added to cart:', cartItem);
+    if (!user) {
+      toast.error('Please log in to add items to cart');
+      return;
     }
-    // In a real app, this would update the cart state/context
+
+    try {
+      // Get CSRF token from meta tag
+      const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      
+      const response = await fetch('/api/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': token || '',
+        },
+        body: JSON.stringify({
+          product_id: cartItem.productId,
+          quantity: cartItem.quantity,
+          size: cartItem.size || null,
+          color: cartItem.color || null,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Success
+        toast.success(data.message || 'Item added to cart successfully!');
+        
+        // Optional: Update cart count in header if you have state management
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Added to cart successfully:', cartItem);
+        }
+      } else {
+        // Handle errors (like item already in cart)
+        if (response.status === 409) {
+          toast.error(data.message || 'This item is already in your cart.');
+        } else {
+          toast.error(data.message || 'Failed to add item to cart');
+        }
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('An error occurred while adding to cart.');
+    }
   };
 
   const handleToggleWishlist = () => {

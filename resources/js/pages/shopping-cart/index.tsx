@@ -104,7 +104,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cartItems, cartSummary, use
       setIsLoading(true);
       // Get CSRF token from meta tag
       const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-      
+
       const response = await fetch(`/api/cart/${itemId}`, {
         method: 'DELETE',
         headers: {
@@ -264,7 +264,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cartItems, cartSummary, use
                   <Icon name="Truck" size={24} className="text-primary" />
                 </div>
                 <h4 className="font-medium text-foreground mb-1">Free Shipping</h4>
-                <p className="text-sm text-muted-foreground">On orders over $50</p>
+                <p className="text-sm text-muted-foreground">On orders over ₦50</p>
               </div>
 
               <div className="flex flex-col items-center">

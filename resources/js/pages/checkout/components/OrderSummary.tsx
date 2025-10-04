@@ -1,8 +1,25 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
+import { CartItem, CartSummary, CheckoutFormData } from '../../../types';
 
-const OrderSummary = ({ cartItems, cartSummary, formData, promoCode, setPromoCode, applyPromo }) => {
+interface OrderSummaryProps {
+  cartItems: CartItem[];
+  cartSummary: CartSummary;
+  formData: CheckoutFormData;
+  promoCode: string;
+  setPromoCode: (code: string) => void;
+  applyPromo: () => void;
+}
+
+const OrderSummary: React.FC<OrderSummaryProps> = ({
+  cartItems,
+  cartSummary,
+  formData,
+  promoCode,
+  setPromoCode,
+  applyPromo
+}) => {
   const subtotal = cartSummary?.subtotal || 0;
   const deliveryFee = formData?.delivery?.price || cartSummary?.shipping || 0;
   const discount = promoCode === 'SAVE10' ? subtotal * 0.1 : 0;
@@ -31,11 +48,11 @@ const OrderSummary = ({ cartItems, cartSummary, formData, promoCode, setPromoCod
             <div className="flex-1 min-w-0">
               <div className="font-medium text-foreground text-sm truncate">{item?.product?.name}</div>
               <div className="text-xs text-muted-foreground">
-                {item?.size && `${item.size}`}{item?.size && item?.color && ' | '}{item?.color && `${item.color}`}
+                {item?.size && `₦{item.size}`}{item?.size && item?.color && ' | '}{item?.color && `₦{item.color}`}
               </div>
             </div>
             <div className="text-sm font-medium text-foreground">
-              ${item?.total_price?.toFixed(2)}
+              ₦{item?.total_price?.toFixed(2)}
             </div>
           </div>
         ))}
@@ -68,32 +85,32 @@ const OrderSummary = ({ cartItems, cartSummary, formData, promoCode, setPromoCod
       <div className="space-y-3 border-t border-border pt-4">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Subtotal</span>
-          <span className="text-foreground">${subtotal?.toFixed(2)}</span>
+          <span className="text-foreground">₦{subtotal?.toFixed(2)}</span>
         </div>
 
         {discount > 0 && (
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Discount (SAVE10)</span>
-            <span className="text-success">-${discount?.toFixed(2)}</span>
+            <span className="text-success">-₦{discount?.toFixed(2)}</span>
           </div>
         )}
 
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Delivery</span>
           <span className="text-foreground">
-            {deliveryFee === 0 ? 'FREE' : `$${deliveryFee?.toFixed(2)}`}
+            {deliveryFee === 0 ? 'FREE' : `₦${deliveryFee?.toFixed(2)}`}
           </span>
         </div>
 
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Tax</span>
-          <span className="text-foreground">${tax?.toFixed(2)}</span>
+          <span className="text-foreground">₦{tax?.toFixed(2)}</span>
         </div>
 
         <div className="border-t border-border pt-3">
           <div className="flex justify-between text-lg font-semibold">
             <span className="text-foreground">Total</span>
-            <span className="text-foreground">${total?.toFixed(2)}</span>
+            <span className="text-foreground">₦{total?.toFixed(2)}</span>
           </div>
         </div>
       </div>

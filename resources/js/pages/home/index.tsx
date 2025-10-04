@@ -77,6 +77,9 @@ const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories,
       if (response.ok) {
         toast.success(data.message || 'Product added to cart!');
         router.reload({ only: ['cartCount'] }); // Refresh cartCount prop
+      } else if (response.status === 409) {
+        // 409 Conflict - item already exists
+        toast.error(data.message || 'This item is already in your cart.');
       } else {
         toast.error(data.message || 'Failed to add product to cart.');
       }

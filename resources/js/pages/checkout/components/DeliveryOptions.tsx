@@ -1,12 +1,36 @@
 import React, { useState } from 'react';
 import Button from '../../../components/ui/button';
 import Icon from '../../../components/AppIcon';
+import { CheckoutFormData, ShippingOption } from '../../../types';
 
-const DeliveryOptions = ({ onNext, onBack, formData, setFormData, shippingOptions }) => {
+interface DeliveryOption {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  estimatedDate: string;
+  icon: string;
+}
+
+interface DeliveryOptionsProps {
+  onNext: () => void;
+  onBack: () => void;
+  formData: CheckoutFormData;
+  setFormData: React.Dispatch<React.SetStateAction<CheckoutFormData>>;
+  shippingOptions: ShippingOption[];
+}
+
+const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
+  onNext,
+  onBack,
+  formData,
+  setFormData,
+  shippingOptions
+}) => {
   const [selectedOption, setSelectedOption] = useState(formData?.delivery?.option || 'standard');
 
   // Use dynamic shipping options if provided, otherwise fallback to default options
-  const deliveryOptions = shippingOptions?.length > 0 ? shippingOptions?.map(option => ({
+  const deliveryOptions: DeliveryOption[] = shippingOptions?.length > 0 ? shippingOptions?.map(option => ({
     id: option.id,
     name: option.name,
     description: `Delivered within ${option.duration}`,
@@ -40,7 +64,7 @@ const DeliveryOptions = ({ onNext, onBack, formData, setFormData, shippingOption
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
+  const handleOptionSelect = (optionId: string) => {
     setSelectedOption(optionId);
     const option = deliveryOptions?.find(opt => opt?.id === optionId);
     setFormData(prev => ({

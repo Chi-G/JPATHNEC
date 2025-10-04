@@ -54,7 +54,7 @@ const SavedItems = ({ savedItems, onMoveToCart, onRemoveFromSaved }: SavedItemsP
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {savedItems?.map((item) => (
           <div key={item?.id} className="bg-card border border-border rounded-lg overflow-hidden">
-            <Link href={`/products?id=${item?.id}`}>
+            <Link href={`/products?id=₦{item?.id}`}>
               <div className="aspect-square overflow-hidden bg-muted">
                 <Image
                   src={item?.image}
@@ -66,7 +66,7 @@ const SavedItems = ({ savedItems, onMoveToCart, onRemoveFromSaved }: SavedItemsP
 
             <div className="p-4">
               <Link
-                href={`/products?id=${item?.id}`}
+                href={`/products?id=₦{item?.id}`}
                 className="font-medium text-foreground hover:text-primary transition-hover line-clamp-2 mb-2"
               >
                 {item?.name}
@@ -86,10 +86,10 @@ const SavedItems = ({ savedItems, onMoveToCart, onRemoveFromSaved }: SavedItemsP
               </div>
 
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-lg font-bold text-primary">${item?.price?.toFixed(2)}</span>
+                <span className="text-lg font-bold text-primary">₦{item?.price?.toFixed(2)}</span>
                 {item?.originalPrice && item?.originalPrice > item?.price && (
                   <span className="text-sm text-muted-foreground line-through">
-                    ${item?.originalPrice?.toFixed(2)}
+                    ₦{item?.originalPrice?.toFixed(2)}
                   </span>
                 )}
               </div>

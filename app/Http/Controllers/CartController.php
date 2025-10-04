@@ -37,32 +37,37 @@ class CartController extends Controller
 
         $product = Product::findOrFail($request->product_id);
 
-        // Check if item already exists in cart
+        // Check if item already exists in cart (including null values)
         $existingItem = CartItem::where('user_id', Auth::id())
             ->where('product_id', $request->product_id)
-            ->where('size', $request->size)
-            ->where('color', $request->color)
+            ->where(function($query) use ($request) {
+                $query->where('size', $request->size ?: null)
+                      ->where('color', $request->color ?: null);
+            })
             ->first();
 
         if ($existingItem) {
-            $existingItem->update([
-                'quantity' => $existingItem->quantity + $request->quantity
-            ]);
+            // Don't automatically increase quantity - let user know item exists
+            return response()->json([
+                'message' => 'This item is already in your cart. Go to cart to adjust quantity.',
+                'cart_count' => $this->getCartCount(),
+                'already_exists' => true
+            ], 409); // 409 Conflict status
         } else {
             CartItem::create([
                 'user_id' => Auth::id(),
                 'product_id' => $request->product_id,
                 'quantity' => $request->quantity,
-                'size' => $request->size,
-                'color' => $request->color,
+                'size' => $request->size ?: null,
+                'color' => $request->color ?: null,
                 'price' => $product->price,
             ]);
+            
+            return response()->json([
+                'message' => 'Item added to cart successfully!',
+                'cart_count' => $this->getCartCount(),
+            ]);
         }
-
-        return response()->json([
-            'message' => 'Item added to cart successfully!',
-            'cart_count' => $this->getCartCount(),
-        ]);
     }
 
     /**

@@ -108,3 +108,68 @@ export interface Product {
   in_stock?: boolean;
   selectedSize: string;
 }
+
+// Checkout Types
+export interface CartItem {
+  id: number;
+  product: {
+    id: number;
+    name: string;
+    image: string;
+    price: number;
+  };
+  quantity: number;
+  size?: string;
+  color?: string;
+  unit_price: number;
+  total_price: number;
+}
+
+export interface CheckoutFormData {
+  shipping?: {
+    fullName?: string;
+    email?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    phone?: string;
+    country?: string;
+    saveAddress?: boolean;
+  };
+  delivery?: {
+    option?: string;
+    name?: string;
+    price?: number;
+    estimatedDate?: string;
+  };
+  payment?: {
+    method?: string;
+    cardNumber?: string;
+    cardName?: string;
+    expiryMonth?: string;
+    expiryYear?: string;
+    cvv?: string;
+    saveCard?: boolean;
+  };
+}
+
+export interface ShippingOption {
+  id: string;
+  name: string;
+  price: number;
+  duration: string;
+}
+
+export interface PaymentMethod {
+  id: string;
+  name: string;
+}
+
+export interface CartSummary {
+  subtotal: number;
+  tax: number;
+  shipping: number;
+  total: number;
+  item_count: number;
+}

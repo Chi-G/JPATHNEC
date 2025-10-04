@@ -49,7 +49,7 @@ class CartService {
   static async updateCartItem(itemId: number, quantity: number): Promise<ApiResponse> {
     try {
       const response = await fetch(apiRoutes.cartUpdate(itemId), {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'X-CSRF-TOKEN': this.getCsrfToken(),

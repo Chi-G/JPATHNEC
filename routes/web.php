@@ -1,12 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ShoppingCartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\PaymentController;
 
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -28,6 +30,30 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::get('/order/success/{order}', [CheckoutController::class, 'orderSuccess'])->name('order.success');
+});
+
+// Payment routes
+Route::middleware('auth')->group(function () {
+    Route::post('/payment/initialize', [PaymentController::class, 'initialize'])->name('payment.initialize');
+    Route::get('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
+    Route::post('/payment/verify', [PaymentController::class, 'verify'])->name('payment.verify');
+    
+    // Debug/Emergency routes (remove in production)
+    Route::post('/payment/clear-cart', [PaymentController::class, 'clearCart'])->name('payment.clear-cart');
+    Route::get('/payment/cart-status', [PaymentController::class, 'getCartStatus'])->name('payment.cart-status');
+    
+    // Debug route to check recent orders
+    Route::get('/debug/orders', function() {
+        if (!Auth::check()) return 'Not authenticated';
+        
+        $orders = \App\Models\Order::where('user_id', Auth::id())
+            ->latest()
+            ->take(3)
+            ->get(['id', 'order_number', 'payment_reference', 'payment_status', 'status', 'created_at']);
+            
+        return response()->json($orders);
+    })->name('debug.orders');
 });
 
 // API Routes for cart operations (AJAX)
