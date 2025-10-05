@@ -141,11 +141,6 @@ const ProductList: React.FC<ProductListProps> = ({
   };
 
   // Handle wishlist toggle
-  const handleWishlistToggle = (productId: number, isWishlisted: boolean) => {
-    // TODO: Implement backend wishlist API
-    console.log(`Product ${productId} wishlist status: ${isWishlisted}`);
-  };
-
   // Handle add to cart
   const handleAddToCart = async (product: Product) => {
     if (!user) {
@@ -352,7 +347,6 @@ const ProductList: React.FC<ProductListProps> = ({
               <ProductGrid
                 products={products.data}
                 loading={loading}
-                onWishlistToggle={handleWishlistToggle}
                 onAddToCart={handleAddToCart}
               />
 

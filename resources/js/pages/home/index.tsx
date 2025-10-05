@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Head, router } from '@inertiajs/react';
 import toast from 'react-hot-toast';
 import Header from '../../components/ui/header';
@@ -37,16 +37,7 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories, auth, cartCount }) => {
-  const [wishlistItems, setWishlistItems] = useState<number[]>([]);
-
   const { new_arrivals, best_sellers, trending } = featured_products;
-
-  const handleAddToWishlist = (productId: string | number, isWishlisted: boolean) => {
-    const id = typeof productId === 'string' ? parseInt(productId) : productId;
-    setWishlistItems((prev) =>
-      isWishlisted ? [...prev, id] : prev.filter((itemId) => itemId !== id)
-    );
-  };
 
   const handleAddToCart = async (product: Product) => {
     if (!auth?.user) {
@@ -89,17 +80,6 @@ const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories,
     }
   };
 
-  useEffect(() => {
-    const savedWishlist = localStorage.getItem('wishlist');
-    if (savedWishlist) {
-      setWishlistItems(JSON.parse(savedWishlist));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('wishlist', JSON.stringify(wishlistItems));
-  }, [wishlistItems]);
-
   return (
     <>
       <Head title="JPATHNEC - Premium Men's & Women's Apparel and Footwear">
@@ -127,7 +107,6 @@ const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories,
           title="New Arrivals"
           products={new_arrivals}
           viewAllLink={buildProductListUrl({ filter: 'new' })}
-          onAddToWishlist={handleAddToWishlist}
           onAddToCart={(productId) => {
             const product = new_arrivals.find((p) => p.id === productId);
             if (product) handleAddToCart(product);
@@ -138,7 +117,6 @@ const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories,
           title="Best Sellers"
           products={best_sellers}
           viewAllLink={buildProductListUrl({ filter: 'bestsellers' })}
-          onAddToWishlist={handleAddToWishlist}
           onAddToCart={(productId) => {
             const product = best_sellers.find((p) => p.id === productId);
             if (product) handleAddToCart(product);
@@ -148,7 +126,6 @@ const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories,
           title="Trending Now"
           products={trending}
           viewAllLink={buildProductListUrl({ filter: 'trending' })}
-          onAddToWishlist={handleAddToWishlist}
           onAddToCart={(productId) => {
             const product = trending.find((p) => p.id === productId);
             if (product) handleAddToCart(product);

@@ -243,9 +243,11 @@ const Header: React.FC<HeaderProps> = ({ user = null, cartCount = 0 }) => {
             )}
 
             {/* Wishlist */}
-            <Button variant="ghost" size="icon">
-              <Icon name="Heart" size={20} />
-            </Button>
+            <Link href="/wishlist">
+              <Button variant="ghost" size="icon">
+                <Icon name="Heart" size={20} />
+              </Button>
+            </Link>
 
             {/* Cart */}
             <Link href="/shopping-cart" className="relative">
@@ -302,32 +304,25 @@ const Header: React.FC<HeaderProps> = ({ user = null, cartCount = 0 }) => {
 
                       <div className="py-2">
                         <Link
-                          href="/profile"
+                          href="/settings/profile"
                           className="flex items-center px-3 py-2 text-sm text-foreground hover:bg-muted rounded transition-hover"
                         >
                           <Icon name="User" size={16} className="mr-3 text-muted-foreground" />
-                          Profile Settings
+                          Manage Account
                         </Link>
                         <Link
-                          href="/orders"
+                          href="/my-orders"
                           className="flex items-center px-3 py-2 text-sm text-foreground hover:bg-muted rounded transition-hover"
                         >
                           <Icon name="Package" size={16} className="mr-3 text-muted-foreground" />
                           My Orders
                         </Link>
-                        <Link
+                        <Link 
                           href="/wishlist"
                           className="flex items-center px-3 py-2 text-sm text-foreground hover:bg-muted rounded transition-hover"
                         >
                           <Icon name="Heart" size={16} className="mr-3 text-muted-foreground" />
                           Wishlist
-                        </Link>
-                        <Link
-                          href="/settings"
-                          className="flex items-center px-3 py-2 text-sm text-foreground hover:bg-muted rounded transition-hover"
-                        >
-                          <Icon name="Settings" size={16} className="mr-3 text-muted-foreground" />
-                          Account Settings
                         </Link>
                       </div>
 

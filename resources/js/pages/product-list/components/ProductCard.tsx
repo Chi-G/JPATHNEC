@@ -1,48 +1,54 @@
 import React, { useState } from 'react';
 import { Link } from '@inertiajs/react';
+import toast from 'react-hot-toast';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 import Button from '../../../components/ui/button';
-
-interface Color {
-  name: string;
-  hex: string;
-}
-
-interface Product {
-  id: number;
-  name: string;
-  brand?: string;
-  price: number;
-  originalPrice?: number;
-  rating: number;
-  reviewCount: number;
-  image: string;
-  isNew?: boolean;
-  isBestseller?: boolean;
-  discount?: number;
-  category: string;
-  gender: string;
-  sizes: string[];
-  colors: Color[];
-  isWishlisted: boolean;
-}
+import { Product } from '../../../types';
 
 interface ProductCardProps {
   product: Product;
-  onWishlistToggle: (productId: number, isWishlisted: boolean) => void;
   onAddToCart: (product: Product) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onWishlistToggle, onAddToCart }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
   const [isWishlisted, setIsWishlisted] = useState(product?.isWishlisted || false);
   const [isHovered, setIsHovered] = useState(false);
 
-  const handleWishlistClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleWishlistClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsWishlisted(!isWishlisted);
-    onWishlistToggle(product.id, !isWishlisted);
+    
+    // Get CSRF token from meta tag
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    
+    try {
+      const response = await fetch('/wishlist/toggle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': token || '',
+        },
+        body: JSON.stringify({
+          product_id: product.id,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setIsWishlisted(data.in_wishlist);
+        // Show toast notification
+        toast.success(data.message);
+        // Remove the redundant call to onWishlistToggle that was causing double toggle
+      } else {
+        // Handle error
+        toast.error(data.message || 'Failed to update wishlist');
+      }
+    } catch (error) {
+      console.error('Error toggling wishlist:', error);
+      toast.error('An error occurred while updating wishlist');
+    }
   };
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -160,16 +166,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onWishlistToggle, on
 
         {/* Rating */}
         <div className="flex items-center gap-2 mb-2">
-          <div className="flex items-center gap-1">{renderStars(product.rating)}</div>
-          <span className="text-xs text-muted-foreground">({product.reviewCount})</span>
+          <div className="flex items-center gap-1">{renderStars(product.rating || 0)}</div>
+          <span className="text-xs text-muted-foreground">({product.reviewCount || 0})</span>
         </div>
 
         {/* Price */}
         <div className="flex items-center gap-2 mb-2">
           <span className="text-lg font-semibold text-foreground">
-            ${product.price.toFixed(2)}
+            ${(product.price || 0).toFixed(2)}
           </span>
-          {product.originalPrice && product.originalPrice > product.price && (
+          {product.originalPrice && product.originalPrice > (product.price || 0) && (
             <span className="text-sm text-muted-foreground line-through">
               ${product.originalPrice.toFixed(2)}
             </span>

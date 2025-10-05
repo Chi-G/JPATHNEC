@@ -214,19 +214,49 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     }
   };
 
-  const handleToggleWishlist = () => {
+  const handleToggleWishlist = async () => {
     if (!product?.id) return;
+    if (!user) {
+      toast.error('Please log in to add items to wishlist');
+      return;
+    }
 
-    setWishlist(prev => {
-      const newWishlist = new Set(prev);
-      const productIdStr = product.id.toString();
-      if (newWishlist?.has(productIdStr)) {
-        newWishlist?.delete(productIdStr);
+    try {
+      // Get CSRF token from meta tag
+      const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      
+      const response = await fetch('/wishlist/toggle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': token || '',
+        },
+        body: JSON.stringify({
+          product_id: product.id,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(data.message);
+        setWishlist(prev => {
+          const newWishlist = new Set(prev);
+          const productIdStr = product.id.toString();
+          if (data.in_wishlist) {
+            newWishlist.add(productIdStr);
+          } else {
+            newWishlist.delete(productIdStr);
+          }
+          return newWishlist;
+        });
       } else {
-        newWishlist?.add(productIdStr);
+        toast.error(data.message || 'Failed to update wishlist');
       }
-      return newWishlist;
-    });
+    } catch (error) {
+      console.error('Error toggling wishlist:', error);
+      toast.error('An error occurred while updating wishlist');
+    }
   };
 
   const handleAddToWishlist = (id: number) => {

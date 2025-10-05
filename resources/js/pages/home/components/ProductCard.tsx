@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from '@inertiajs/react';
+import toast from 'react-hot-toast';
 import Image from '../../../components/AppImage';
 import Button from '../../../components/ui/button';
 import Icon from '../../../components/AppIcon';
@@ -7,19 +8,45 @@ import { Product } from '../../../types';
 
 interface ProductCardProps {
   product: Product;
-  onAddToWishlist?: (productId: string | number, isWishlisted: boolean) => void;
   onAddToCart?: (productId: string | number) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToWishlist, onAddToCart }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
   const [isWishlisted, setIsWishlisted] = useState(product.isWishlisted ?? false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  const handleWishlistToggle = (e: React.MouseEvent) => {
+  const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsWishlisted(!isWishlisted);
-    onAddToWishlist?.(product.id, !isWishlisted);
+    
+    // Get CSRF token from meta tag
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    
+    try {
+      const response = await fetch('/wishlist/toggle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': token || '',
+        },
+        body: JSON.stringify({
+          product_id: product.id,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setIsWishlisted(data.in_wishlist);
+        toast.success(data.message);
+        // Remove the redundant call to onAddToWishlist that was causing double toggle
+      } else {
+        toast.error(data.message || 'Failed to update wishlist');
+      }
+    } catch (error) {
+      console.error('Error toggling wishlist:', error);
+      toast.error('An error occurred while updating wishlist');
+    }
   };
 
   const handleAddToCart = async (e: React.MouseEvent) => {

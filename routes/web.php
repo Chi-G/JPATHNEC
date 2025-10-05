@@ -9,6 +9,8 @@ use App\Http\Controllers\ShoppingCartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\MyOrdersController;
+use App\Http\Controllers\WishlistController;
 
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -29,6 +31,24 @@ Route::delete('/cart/{item}', [ShoppingCartController::class, 'destroy'])->name(
 Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+});
+
+// My Orders routes
+Route::middleware('auth')->group(function () {
+    Route::get('/my-orders', [MyOrdersController::class, 'index'])->name('my-orders.index');
+    Route::get('/my-orders/{id}', [MyOrdersController::class, 'show'])->name('my-orders.show');
+    Route::post('/my-orders/{id}/reorder', [MyOrdersController::class, 'reorder'])->name('my-orders.reorder');
+    Route::get('/my-orders/{id}/invoice', [MyOrdersController::class, 'downloadInvoice'])->name('my-orders.invoice');
+});
+
+// Wishlist routes
+Route::middleware('auth')->group(function () {
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist', [WishlistController::class, 'store'])->name('wishlist.store');
+    Route::delete('/wishlist/{productId}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
+    Route::delete('/wishlist/clear', [WishlistController::class, 'clear'])->name('wishlist.clear');
+    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+    Route::get('/wishlist/check/{productId}', [WishlistController::class, 'check'])->name('wishlist.check');
 });
 
 // Payment routes

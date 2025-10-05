@@ -8,11 +8,10 @@ interface FeaturedProductsProps {
   title: string;
   products: Product[]; 
   viewAllLink?: string;
-  onAddToWishlist: (productId: string | number, isWishlisted: boolean) => void;
   onAddToCart: (productId: string | number) => void;
 }
 
-const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ title, products, viewAllLink, onAddToWishlist, onAddToCart }) => {
+const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ title, products, viewAllLink, onAddToCart }) => {
   return (
     <section className="py-16 bg-background">
       <div className="container mx-auto px-8 md:px-12 lg:px-16">
@@ -41,7 +40,6 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ title, products, vi
             <ProductCard
               key={product?.id}
               product={product}
-              onAddToWishlist={onAddToWishlist}
               onAddToCart={onAddToCart}
             />
           ))}

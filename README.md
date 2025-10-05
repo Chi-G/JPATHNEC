@@ -11,7 +11,7 @@ A modern full-stack e-commerce platform for men's and women's clothing, built wi
 
 ## 🚀 Features
 
-- **Laravel 11** - Robust PHP framework with modern features
+- **Laravel 12** - Robust PHP framework with modern features
 - **Inertia.js** - Modern monolithic development with SPA benefits
 - **React 19** - Latest React with improved rendering and concurrent features
 - **Vite** - Lightning-fast build tool and development server
