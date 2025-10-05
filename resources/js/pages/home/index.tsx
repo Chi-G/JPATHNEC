@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import toast from 'react-hot-toast';
 import Header from '../../components/ui/header';
@@ -34,10 +34,21 @@ interface HomeProps {
     user?: User | null;
   };
   cartCount: number;
+  verified?: boolean;
 }
 
-const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories, auth, cartCount }) => {
+const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories, auth, cartCount, verified }) => {
   const { new_arrivals, best_sellers, trending } = featured_products;
+
+  // Show verification success toast
+  useEffect(() => {
+    if (verified) {
+      toast.success('🎉 Email verified successfully! Welcome to JPATHNEC. Happy Shopping.', {
+        duration: 5000,
+        position: 'top-center',
+      });
+    }
+  }, [verified]);
 
   const handleAddToCart = async (product: Product) => {
     if (!auth?.user) {
@@ -48,7 +59,7 @@ const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories,
     try {
       // Get CSRF token from meta tag
       const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-      
+
       const response = await fetch('/api/cart/add', {
         method: 'POST',
         headers: {

@@ -22,7 +22,7 @@ Route::get('/contact', function () {
     if (Auth::check()) {
         $cartCount = \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity');
     }
-    
+
     return Inertia::render('contact', [
         'auth' => Auth::user() ? ['user' => Auth::user()] : null,
         'cartCount' => $cartCount,
@@ -41,22 +41,22 @@ Route::put('/cart/{item}', [ShoppingCartController::class, 'update'])->name('car
 Route::delete('/cart/{item}', [ShoppingCartController::class, 'destroy'])->name('cart.destroy');
 
 // Checkout routes
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
 });
 
 // My Orders routes
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/my-orders', [MyOrdersController::class, 'index'])->name('my-orders.index');
     Route::get('/my-orders/{id}', [MyOrdersController::class, 'show'])->name('my-orders.show');
     Route::get('/my-orders/{id}/track', [MyOrdersController::class, 'track'])->name('my-orders.track');
     Route::post('/my-orders/{id}/reorder', [MyOrdersController::class, 'reorder'])->name('my-orders.reorder');
     Route::get('/my-orders/{id}/invoice', [MyOrdersController::class, 'downloadInvoice'])->name('my-orders.invoice');
-}); 
+});
 
 // Wishlist routes
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/wishlist', [WishlistController::class, 'store'])->name('wishlist.store');
     Route::delete('/wishlist/{productId}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
@@ -66,22 +66,21 @@ Route::middleware('auth')->group(function () {
 });
 
 // Payment routes
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/payment/initialize', [PaymentController::class, 'initialize'])->name('payment.initialize');
     Route::get('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
     Route::post('/payment/verify', [PaymentController::class, 'verify'])->name('payment.verify');
-    
+
     // Debug/Emergency routes (remove in production)
     Route::post('/payment/clear-cart', [PaymentController::class, 'clearCart'])->name('payment.clear-cart');
     Route::get('/payment/cart-status', [PaymentController::class, 'getCartStatus'])->name('payment.cart-status');
 });
 
 // API Routes for cart operations (AJAX)
-Route::post('/api/cart/add', [CartController::class, 'add'])->name('api.cart.add')->middleware('auth');
-Route::patch('/api/cart/{id}', [CartController::class, 'update'])->name('api.cart.update')->middleware('auth');
-Route::delete('/api/cart/{id}', [CartController::class, 'remove'])->name('api.cart.remove')->middleware('auth');
-Route::delete('/api/cart', [CartController::class, 'clear'])->name('api.cart.clear')->middleware('auth');
+Route::post('/api/cart/add', [CartController::class, 'add'])->name('api.cart.add')->middleware(['auth', 'verified']);
+Route::patch('/api/cart/{id}', [CartController::class, 'update'])->name('api.cart.update')->middleware(['auth', 'verified']);
+Route::delete('/api/cart/{id}', [CartController::class, 'remove'])->name('api.cart.remove')->middleware(['auth', 'verified']);
+Route::delete('/api/cart', [CartController::class, 'clear'])->name('api.cart.clear')->middleware(['auth', 'verified']);
 
 require __DIR__.'/settings.php';
-require __DIR__.'/auth.php'; 
- 
+require __DIR__.'/auth.php';

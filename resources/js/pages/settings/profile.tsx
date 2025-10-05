@@ -169,10 +169,10 @@ export default function Profile({ auth, addresses, mustVerifyEmail, cartCount = 
     return (
         <>
             <Head title="Profile Settings - JPATHNEC" />
-            
+
             {/* Add Header */}
             <Header user={auth.user} cartCount={cartCount} />
-            
+
             <div className="min-h-screen bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {/* Header */}
@@ -184,7 +184,7 @@ export default function Profile({ auth, addresses, mustVerifyEmail, cartCount = 
                             <ChevronRight className="h-4 w-4 mx-2" />
                             <span className="text-gray-900">Profile</span>
                         </div>
-                        
+
                         <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
                         <p className="text-gray-600 mt-1">
                             Manage your account information and addresses
@@ -193,80 +193,85 @@ export default function Profile({ auth, addresses, mustVerifyEmail, cartCount = 
 
                     {/* Tabs */}
                     <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-                        <div className="border-b border-gray-200">
-                            <nav className="flex">
-                                <button
-                                    onClick={() => setActiveTab('profile')}
-                                    className={`px-6 py-4 text-sm font-medium border-b-2 ${
-                                        activeTab === 'profile'
-                                            ? 'border-primary text-primary'
-                                            : 'border-transparent text-gray-600 hover:text-gray-900'
-                                    }`}
-                                >
-                                    <User className="h-4 w-4 inline mr-2" />
-                                    Personal Information
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab('addresses')}
-                                    className={`px-6 py-4 text-sm font-medium border-b-2 ${
-                                        activeTab === 'addresses'
-                                            ? 'border-primary text-primary'
-                                            : 'border-transparent text-gray-600 hover:text-gray-900'
-                                    }`}
-                                >
-                                    <MapPin className="h-4 w-4 inline mr-2" />
-                                    Addresses ({addresses.length})
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab('password')}
-                                    className={`px-6 py-4 text-sm font-medium border-b-2 ${
-                                        activeTab === 'password'
-                                            ? 'border-primary text-primary'
-                                            : 'border-transparent text-gray-600 hover:text-gray-900'
-                                    }`}
-                                >
-                                    <Lock className="h-4 w-4 inline mr-2" />
-                                    Password
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab('two-factor')}
-                                    className={`px-6 py-4 text-sm font-medium border-b-2 ${
-                                        activeTab === 'two-factor'
-                                            ? 'border-primary text-primary'
-                                            : 'border-transparent text-gray-600 hover:text-gray-900'
-                                    }`}
-                                >
-                                    <Shield className="h-4 w-4 inline mr-2" />
-                                    Two-Factor Auth
-                                </button>
-                                <Link
-                                    href="/settings/appearance"
-                                    className="px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900"
-                                >
-                                    <span className="inline-flex items-center">
-                                        🎨
-                                        <span className="ml-2">Appearance</span>
-                                    </span>
-                                </Link>
-                                <Link
-                                    href="/settings/devices"
-                                    className="px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900"
-                                >
-                                    <span className="inline-flex items-center">
-                                        📱
-                                        <span className="ml-2">Devices</span>
-                                    </span>
-                                </Link>
-                                <Link
-                                    href="/my-orders"
-                                    className="px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900"
-                                >
-                                    <span className="inline-flex items-center">
-                                        📦
-                                        <span className="ml-2">My Orders</span>
-                                    </span>
-                                </Link>
-                            </nav>
+                        <div className="border-b border-gray-200 tabs-scroll-container">
+                            <div className="overflow-x-auto scrollbar-hide mobile-tabs-scroll">
+                                <nav className="flex min-w-max">
+                                    <button
+                                        onClick={() => setActiveTab('profile')}
+                                        className={`flex-shrink-0 px-4 sm:px-6 py-4 text-sm font-medium border-b-2 whitespace-nowrap ${
+                                            activeTab === 'profile'
+                                                ? 'border-primary text-primary'
+                                                : 'border-transparent text-gray-600 hover:text-gray-900'
+                                        }`}
+                                    >
+                                        <User className="h-4 w-4 inline mr-2" />
+                                        <span className="hidden sm:inline">Personal Information</span>
+                                        <span className="sm:hidden">Personal</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('addresses')}
+                                        className={`flex-shrink-0 px-4 sm:px-6 py-4 text-sm font-medium border-b-2 whitespace-nowrap ${
+                                            activeTab === 'addresses'
+                                                ? 'border-primary text-primary'
+                                                : 'border-transparent text-gray-600 hover:text-gray-900'
+                                        }`}
+                                    >
+                                        <MapPin className="h-4 w-4 inline mr-2" />
+                                        Addresses ({addresses.length})
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('password')}
+                                        className={`flex-shrink-0 px-4 sm:px-6 py-4 text-sm font-medium border-b-2 whitespace-nowrap ${
+                                            activeTab === 'password'
+                                                ? 'border-primary text-primary'
+                                                : 'border-transparent text-gray-600 hover:text-gray-900'
+                                        }`}
+                                    >
+                                        <Lock className="h-4 w-4 inline mr-2" />
+                                        Password
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('two-factor')}
+                                        className={`flex-shrink-0 px-4 sm:px-6 py-4 text-sm font-medium border-b-2 whitespace-nowrap ${
+                                            activeTab === 'two-factor'
+                                                ? 'border-primary text-primary'
+                                                : 'border-transparent text-gray-600 hover:text-gray-900'
+                                        }`}
+                                    >
+                                        <Shield className="h-4 w-4 inline mr-2" />
+                                        <span className="hidden sm:inline">Two-Factor Auth</span>
+                                        <span className="sm:hidden">2FA</span>
+                                    </button>
+                                    <Link
+                                        href="/settings/appearance"
+                                        className="flex-shrink-0 px-4 sm:px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900 whitespace-nowrap"
+                                    >
+                                        <span className="inline-flex items-center">
+                                            🎨
+                                            <span className="ml-2">Appearance</span>
+                                        </span>
+                                    </Link>
+                                    <Link
+                                        href="/settings/devices"
+                                        className="flex-shrink-0 px-4 sm:px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900 whitespace-nowrap"
+                                    >
+                                        <span className="inline-flex items-center">
+                                            📱
+                                            <span className="ml-2">Devices</span>
+                                        </span>
+                                    </Link>
+                                    <Link
+                                        href="/my-orders"
+                                        className="flex-shrink-0 px-4 sm:px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900 whitespace-nowrap"
+                                    >
+                                        <span className="inline-flex items-center">
+                                            📦
+                                            <span className="ml-2 hidden sm:inline">My Orders</span>
+                                            <span className="ml-2 sm:hidden">Orders</span>
+                                        </span>
+                                    </Link>
+                                </nav>
+                            </div>
                         </div>
 
                         <div className="p-6">
@@ -309,7 +314,7 @@ export default function Profile({ auth, addresses, mustVerifyEmail, cartCount = 
                                                     {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                                                     {mustVerifyEmail && !auth.user.email_verified_at && (
                                                         <p className="text-orange-600 text-sm mt-1">
-                                                            Your email address is not verified. 
+                                                            Your email address is not verified.
                                                             <Link href="/email/verification-notification" className="underline ml-1">
                                                                 Resend verification email
                                                             </Link>
@@ -576,17 +581,17 @@ export default function Profile({ auth, addresses, mustVerifyEmail, cartCount = 
                                                         Default
                                                     </span>
                                                 )}
-                                                
+
                                                 <div className="mb-3">
                                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                                        address.type === 'billing' 
-                                                            ? 'bg-blue-100 text-blue-800' 
+                                                        address.type === 'billing'
+                                                            ? 'bg-blue-100 text-blue-800'
                                                             : 'bg-green-100 text-green-800'
                                                     }`}>
                                                         {address.type === 'billing' ? 'Billing' : 'Shipping'}
                                                     </span>
                                                 </div>
-                                                
+
                                                 <div className="space-y-1 text-sm">
                                                     <p className="font-medium">{address.full_name}</p>
                                                     {address.company && <p>{address.company}</p>}
@@ -596,7 +601,7 @@ export default function Profile({ auth, addresses, mustVerifyEmail, cartCount = 
                                                     <p>{address.country}</p>
                                                     {address.phone && <p className="text-blue-600">{address.phone}</p>}
                                                 </div>
-                                                
+
                                                 <div className="flex justify-end space-x-2 mt-4">
                                                     <button
                                                         onClick={() => editAddress(address)}
@@ -729,7 +734,12 @@ export default function Profile({ auth, addresses, mustVerifyEmail, cartCount = 
                             {activeTab === 'two-factor' && (
                                 <div className="space-y-6">
                                     <div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Two-Factor Authentication</h3>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-lg font-semibold text-gray-900">Two-Factor Authentication</h3>
+                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                Coming Soon
+                                            </span>
+                                        </div>
                                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                                             <div className="flex items-center">
                                                 <Shield className="h-5 w-5 text-blue-600 mr-2" />
@@ -738,34 +748,34 @@ export default function Profile({ auth, addresses, mustVerifyEmail, cartCount = 
                                                 </p>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="space-y-4">
-                                            <div className="border rounded-lg p-4">
+                                            <div className="border rounded-lg p-4 opacity-60">
                                                 <h4 className="font-medium text-gray-900 mb-2">Authenticator App</h4>
                                                 <p className="text-sm text-gray-600 mb-4">
                                                     Use an authenticator app like Google Authenticator or Authy to generate verification codes.
                                                 </p>
-                                                <Button variant="outline">
+                                                <Button variant="outline" disabled className="cursor-not-allowed">
                                                     Enable Authenticator
                                                 </Button>
                                             </div>
-                                            
-                                            <div className="border rounded-lg p-4">
+
+                                            <div className="border rounded-lg p-4 opacity-60">
                                                 <h4 className="font-medium text-gray-900 mb-2">SMS Verification</h4>
                                                 <p className="text-sm text-gray-600 mb-4">
                                                     Receive verification codes via text message to your phone.
                                                 </p>
-                                                <Button variant="outline">
+                                                <Button variant="outline" disabled className="cursor-not-allowed">
                                                     Enable SMS
                                                 </Button>
                                             </div>
-                                            
-                                            <div className="border rounded-lg p-4">
+
+                                            <div className="border rounded-lg p-4 opacity-60">
                                                 <h4 className="font-medium text-gray-900 mb-2">Recovery Codes</h4>
                                                 <p className="text-sm text-gray-600 mb-4">
                                                     Generate backup codes that you can use if you lose access to your primary 2FA method.
                                                 </p>
-                                                <Button variant="outline">
+                                                <Button variant="outline" disabled className="cursor-not-allowed">
                                                     Generate Codes
                                                 </Button>
                                             </div>

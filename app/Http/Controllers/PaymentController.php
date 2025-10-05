@@ -6,10 +6,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use App\Services\PaymentService;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\CartItem;
+use App\Mail\OrderConfirmation;
 use Inertia\Inertia;
 
 class PaymentController extends Controller
@@ -156,7 +158,7 @@ class PaymentController extends Controller
                 try {
                     // Get user's cart items to create recovery order
                     $cartItems = CartItem::with('product')->where('user_id', Auth::id())->get();
-                    
+
                     if ($cartItems->isNotEmpty()) {
                         // Calculate totals from cart
                         $subtotal = $cartItems->sum('total_price');
@@ -248,11 +250,27 @@ class PaymentController extends Controller
                 'status' => 'processing'
             ]);
 
+            // Send order confirmation email
+            try {
+                $order->load('items.product', 'user');
+                Mail::to($order->user->email)->send(new OrderConfirmation($order));
+                Log::info('Order confirmation email sent', [
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'user_email' => $order->user->email
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to send order confirmation email', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+
             // Clear user's cart with logging (only if user is authenticated)
             if (Auth::check()) {
                 $deletedItems = CartItem::where('user_id', Auth::id())->count();
                 CartItem::where('user_id', Auth::id())->delete();
-                
+
                 Log::info('Payment successful - Cart cleared', [
                     'user_id' => Auth::id(),
                     'order_id' => $order->id,
@@ -263,7 +281,7 @@ class PaymentController extends Controller
                 // Clear cart for the order's user if auth is not available
                 $deletedItems = CartItem::where('user_id', $order->user_id)->count();
                 CartItem::where('user_id', $order->user_id)->delete();
-                
+
                 Log::info('Payment successful - Cart cleared for order user', [
                     'order_user_id' => $order->user_id,
                     'order_id' => $order->id,
@@ -306,10 +324,10 @@ class PaymentController extends Controller
             }
 
             $paymentData = $verification['data'];
-            
+
             // Find order by reference - if not found, wait a moment and try again
             $order = Order::where('payment_reference', $request->reference)->first();
-            
+
             if (!$order) {
                 // Wait a moment for database consistency
                 sleep(1);
@@ -322,7 +340,7 @@ class PaymentController extends Controller
                     'payment_data' => $paymentData,
                     'user_id' => Auth::id()
                 ]);
-                
+
                 return response()->json([
                     'status' => false,
                     'message' => 'Order not found. Please contact support with reference: ' . $request->reference
@@ -335,10 +353,26 @@ class PaymentController extends Controller
                     'status' => 'processing'
                 ]);
 
+                // Send order confirmation email
+                try {
+                    $order->load('items.product', 'user');
+                    Mail::to($order->user->email)->send(new OrderConfirmation($order));
+                    Log::info('Order confirmation email sent via AJAX verification', [
+                        'order_id' => $order->id,
+                        'order_number' => $order->order_number,
+                        'user_email' => $order->user->email
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Failed to send order confirmation email via AJAX', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+
                 // Clear user's cart with logging
                 $deletedItems = CartItem::where('user_id', Auth::id())->count();
                 CartItem::where('user_id', Auth::id())->delete();
-                
+
                 Log::info('AJAX Payment verified - Cart cleared', [
                     'user_id' => Auth::id(),
                     'order_id' => $order->id,
@@ -359,14 +393,14 @@ class PaymentController extends Controller
                 'status' => false,
                 'message' => 'Payment verification failed'
             ], 400);
-            
+
         } catch (\Exception $e) {
             Log::error('Payment verification exception', [
                 'reference' => $request->reference,
                 'error' => $e->getMessage(),
                 'user_id' => Auth::id()
             ]);
-            
+
             return response()->json([
                 'status' => false,
                 'message' => 'Payment verification error. Please contact support.'
@@ -441,7 +475,7 @@ class PaymentController extends Controller
 
         $cartItems = CartItem::where('user_id', Auth::id())->get();
         $itemCount = $cartItems->count();
-        
+
         // Log cart items before deletion
         Log::info('Manual cart clearing initiated', [
             'user_id' => Auth::id(),
@@ -471,7 +505,7 @@ class PaymentController extends Controller
         }
 
         $cartItems = CartItem::with('product')->where('user_id', Auth::id())->get();
-        
+
         return response()->json([
             'user_id' => Auth::id(),
             'cart_items_count' => $cartItems->count(),

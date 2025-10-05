@@ -44,8 +44,12 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
+        // Log the user in temporarily to access verification routes
         Auth::login($user);
 
-        return redirect()->intended(route('home'));
+        // Redirect to email verification notice instead of home
+        return redirect()->route('verification.notice')
+            ->with('status', 'registration-success')
+            ->with('message', 'Registration successful! Please check your email and click the verification link to activate your account.');
     }
 }

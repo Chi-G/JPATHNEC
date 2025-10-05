@@ -31,3 +31,53 @@
     padding-right: 6rem;
   }
 }
+
+/* Hide scrollbar while maintaining scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+  scroll-behavior: smooth;   /* Smooth scrolling */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari and Opera */
+}
+
+/* Mobile-friendly horizontal scroll tabs */
+.mobile-tabs-scroll {
+  touch-action: pan-x;       /* Allow horizontal touch scrolling */
+  -webkit-overflow-scrolling: touch; /* iOS momentum scrolling */
+}
+
+/* Subtle scroll indicators for mobile tabs */
+.tabs-scroll-container {
+  position: relative;
+}
+
+.tabs-scroll-container::before,
+.tabs-scroll-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.tabs-scroll-container::before {
+  left: 0;
+  background: linear-gradient(to right, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+}
+
+.tabs-scroll-container::after {
+  right: 0;
+  background: linear-gradient(to left, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+}
+
+@media (min-width: 640px) {
+  .tabs-scroll-container::before,
+  .tabs-scroll-container::after {
+    display: none;
+  }
+}

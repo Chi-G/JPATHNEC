@@ -1,7 +1,7 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm, Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Monitor, Smartphone, Tablet, Trash2, LogOut, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { Monitor, Smartphone, Tablet, Trash2, LogOut, AlertTriangle, Eye, EyeOff, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import Header from '@/components/ui/header';
 import Input from '@/components/ui/input';
@@ -35,32 +35,96 @@ export default function Devices({ devices, auth, cartCount = 0 }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  
+
   const { data, setData, delete: deleteAccount, processing, errors } = useForm({
     password: '',
   });
   const getDeviceIcon = (device: Device) => {
     const platform = device.platform?.toLowerCase() || '';
-    
+
     if (platform.includes('mobile') || platform.includes('android') || platform.includes('ios')) {
       return <Smartphone className="h-6 w-6" />;
     } else if (platform.includes('tablet') || platform.includes('ipad')) {
       return <Tablet className="h-6 w-6" />;
     }
-    
+
     return <Monitor className="h-6 w-6" />;
   };
 
   const handleRemoveDevice = (deviceId: number) => {
-    if (confirm('Are you sure you want to remove this device?')) {
-      router.delete(`/settings/devices/${deviceId}`);
-    }
+    toast((t) => (
+      <div className="flex flex-col gap-3">
+        <div>
+          <p className="font-medium">Remove Device</p>
+          <p className="text-sm text-gray-600">Are you sure you want to remove this device?</p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              router.delete(`/settings/devices/${deviceId}`, {
+                onSuccess: () => {
+                  toast.success('Device removed successfully');
+                },
+                onError: () => {
+                  toast.error('Failed to remove device');
+                }
+              });
+              toast.dismiss(t.id);
+            }}
+            className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
+          >
+            Remove
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: Infinity,
+    });
   };
 
   const handleRemoveAllOthers = () => {
-    if (confirm('Are you sure you want to remove all other devices? This will log them out.')) {
-      router.delete('/settings/devices');
-    }
+    toast((t) => (
+      <div className="flex flex-col gap-3">
+        <div>
+          <p className="font-medium">Remove All Other Devices</p>
+          <p className="text-sm text-gray-600">
+            Are you sure you want to remove all other devices? This will log them out.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              router.delete('/settings/devices', {
+                onSuccess: () => {
+                  toast.success('All other devices have been removed successfully');
+                },
+                onError: () => {
+                  toast.error('Failed to remove devices');
+                }
+              });
+              toast.dismiss(t.id);
+            }}
+            className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
+          >
+            Remove All
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: Infinity,
+    });
   };
 
   const handleDeleteAccount = () => {
@@ -94,12 +158,21 @@ export default function Devices({ devices, auth, cartCount = 0 }: Props) {
   return (
     <>
       <Head title="Device settings" />
-      
+
       {/* Add Header */}
       <Header user={auth.user} cartCount={cartCount} />
-      
+
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Breadcrumb Navigation */}
+          <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+            <Link href="/" className="hover:text-primary">Home</Link>
+            <ChevronRight className="h-4 w-4 mx-2" />
+            <Link href="/settings/profile" className="hover:text-primary">Settings</Link>
+            <ChevronRight className="h-4 w-4 mx-2" />
+            <span className="text-gray-900 font-medium">Devices</span>
+          </div>
+
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Device Management</h1>
             <p className="text-gray-600 mt-1">
@@ -136,7 +209,7 @@ export default function Devices({ devices, auth, cartCount = 0 }: Props) {
                         </div>
                       </div>
                     </div>
-                    
+
                     <Button
                       variant="outline"
                       size="sm"
@@ -148,10 +221,10 @@ export default function Devices({ devices, auth, cartCount = 0 }: Props) {
                           : 'text-destructive hover:text-destructive border-red-300 hover:bg-red-50'
                       }`}
                       title={
-                        device.is_current 
-                          ? 'Cannot remove current device' 
-                          : devices.length <= 1 
-                          ? 'Cannot remove the only device' 
+                        device.is_current
+                          ? 'Cannot remove current device'
+                          : devices.length <= 1
+                          ? 'Cannot remove the only device'
                           : 'Remove this device'
                       }
                     >
@@ -236,7 +309,7 @@ export default function Devices({ devices, auth, cartCount = 0 }: Props) {
                       <li>All personal data</li>
                     </ul>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div>
                       <label className="block text-sm font-medium text-red-800 mb-2">
@@ -281,7 +354,7 @@ export default function Devices({ devices, auth, cartCount = 0 }: Props) {
                         <p className="text-red-600 text-sm mt-1">{errors.password}</p>
                       )}
                     </div>
-                    
+
                     <div className="flex gap-3">
                       <Button
                         variant="outline"

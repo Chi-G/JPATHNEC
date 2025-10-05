@@ -45,6 +45,11 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Check if email verification is enabled and user is not verified
+        if (Features::enabled(Features::emailVerification()) && ! $user->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice');
+        }
+
         return redirect()->intended(route('home'));
     }
 

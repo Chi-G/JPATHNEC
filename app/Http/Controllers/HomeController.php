@@ -35,10 +35,11 @@ class HomeController extends Controller
             'featured_products' => $this->getFeaturedProducts($request),
             'categories' => $this->getCategories(),
             'hero_slides' => $this->getHeroSlides(),
+            'verified' => $request->query('verified') === '1',
         ]);
     }
 
-    /** 
+    /**
      * Get featured products data
      */
     private function getFeaturedProducts(Request $request): array
