@@ -46,7 +46,7 @@ class OrderItem extends Model
             if ($orderItem->product && empty($orderItem->product_name)) {
                 $orderItem->product_name = $orderItem->product->name;
                 $orderItem->product_sku = $orderItem->product->sku;
-                $orderItem->product_image = $orderItem->product->featured_image;
+                $orderItem->product_image = $orderItem->product->primary_image_url;
             }
         });
     }
@@ -72,7 +72,7 @@ class OrderItem extends Model
      */
     public function getFormattedUnitPriceAttribute(): string
     {
-        return '$' . number_format((float) $this->unit_price, 2);
+        return '₦' . number_format((float) $this->unit_price, 2);
     }
 
     /**
@@ -80,7 +80,7 @@ class OrderItem extends Model
      */
     public function getFormattedTotalPriceAttribute(): string
     {
-        return '$' . number_format((float) $this->total_price, 2);
+        return '₦' . number_format((float) $this->total_price, 2);
     }
 
     /**
@@ -89,10 +89,20 @@ class OrderItem extends Model
     public function getImageUrlAttribute(): string
     {
         if ($this->product_image) {
+            // If product_image is already a full URL, return it
+            if (filter_var($this->product_image, FILTER_VALIDATE_URL)) {
+                return $this->product_image;
+            }
+            // If it's a storage path, add the storage URL
+            if (strpos($this->product_image, 'storage/') === 0) {
+                return asset($this->product_image);
+            }
+            // If it's just a filename, add storage path
             return asset('storage/' . $this->product_image);
         }
 
-        return $this->product?->featured_image_url ?? asset('images/placeholder.jpg');
+        // Fallback to current product image or placeholder
+        return $this->product?->primary_image_url ?? asset('images/placeholder-product.svg');
     }
 
     /**

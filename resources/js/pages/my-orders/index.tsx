@@ -305,9 +305,9 @@ export default function MyOrders({ auth, orders, filters, cartCount = 0 }: MyOrd
                                                             Reorder
                                                         </Button>
                                                     </Link>
-                                                    {order.status === 'shipped' && (
+                                                    <Link href={`/my-orders/${order.id}/track`}>
                                                         <Button size="sm">Track Order</Button>
-                                                    )}
+                                                    </Link>
                                                 </div>
                                             </div>
                                         </div>

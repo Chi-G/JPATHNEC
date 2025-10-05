@@ -11,42 +11,42 @@ use Illuminate\Support\Str;
 class Order extends Model
 {
     use HasFactory;
-
     protected $fillable = [
-        'order_number',
         'user_id',
+        'session_id',
+        'order_number',
         'status',
+        'total_amount',
         'subtotal',
         'tax_amount',
         'shipping_amount',
         'discount_amount',
-        'total_amount',
         'currency',
-        'billing_address',
         'shipping_address',
-        'email',
-        'phone',
-        'payment_status',
+        'billing_address',
         'payment_method',
-        'payment_reference',
-        'shipping_method',
-        'tracking_number',
+        'payment_status',
         'shipped_at',
         'delivered_at',
+        'tracking_number',
         'notes',
         'admin_notes',
+        'status_updated_at',
+        'current_location',
+        'status_description',
     ];
 
     protected $casts = [
+        'shipping_address' => 'array',
+        'billing_address' => 'array',
+        'shipped_at' => 'datetime',
+        'delivered_at' => 'datetime',
+        'status_updated_at' => 'datetime',
+        'total_amount' => 'decimal:2',
         'subtotal' => 'decimal:2',
         'tax_amount' => 'decimal:2',
         'shipping_amount' => 'decimal:2',
         'discount_amount' => 'decimal:2',
-        'total_amount' => 'decimal:2',
-        'billing_address' => 'array',
-        'shipping_address' => 'array',
-        'shipped_at' => 'datetime',
-        'delivered_at' => 'datetime',
     ];
 
     /**
@@ -61,7 +61,7 @@ class Order extends Model
                 $order->order_number = 'JP-' . strtoupper(Str::random(8));
             }
             if (empty($order->currency)) {
-                $order->currency = '$';
+                $order->currency = '₦'; // Nigerian Naira as default
             }
         });
     }
@@ -71,7 +71,7 @@ class Order extends Model
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withDefault();
     }
 
     /**
@@ -151,7 +151,8 @@ class Order extends Model
      */
     public function getFormattedTotalAttribute(): string
     {
-        return '$' . number_format((float) $this->total_amount, 2);
+        $currency = $this->currency ?? '$';
+        return $currency . number_format((float) $this->total_amount, 2);
     }
 
     /**
@@ -165,17 +166,96 @@ class Order extends Model
     /**
      * Update order status.
      */
-    public function updateStatus(string $status): void
+    public function updateStatus(string $status, ?string $description = null, ?string $notes = null, ?string $location = null, ?string $updatedBy = null): void
     {
-        $this->update(['status' => $status]);
+        $this->update([
+            'status' => $status,
+            'status_updated_at' => now(),
+            'current_location' => $location,
+            'status_description' => $description ?? $this->getDefaultStatusDescription($status),
+        ]);
 
+        // Update specific timestamp fields based on status
         if ($status === 'shipped' && !$this->shipped_at) {
             $this->update(['shipped_at' => now()]);
-        }
-
-        if ($status === 'delivered' && !$this->delivered_at) {
+        } elseif ($status === 'delivered' && !$this->delivered_at) {
             $this->update(['delivered_at' => now()]);
         }
+    }
+
+    /**
+     * Get order status history using existing fields.
+     */
+    public function getStatusHistory(): array
+    {
+        $history = [];
+
+        // Add creation status
+        $history[] = [
+            'status' => 'pending',
+            'timestamp' => $this->created_at,
+            'description' => 'Order placed',
+        ];
+
+        // Add shipped status if available
+        if ($this->shipped_at) {
+            $history[] = [
+                'status' => 'shipped',
+                'timestamp' => $this->shipped_at,
+                'description' => 'Order shipped' . ($this->tracking_number ? " (Tracking: {$this->tracking_number})" : ''),
+            ];
+        }
+
+        // Add delivered status if available
+        if ($this->delivered_at) {
+            $history[] = [
+                'status' => 'delivered',
+                'timestamp' => $this->delivered_at,
+                'description' => 'Order delivered',
+            ];
+        }
+
+        // Add current status if different and status_updated_at exists
+        if ($this->status_updated_at && !in_array($this->status, ['pending', 'shipped', 'delivered'])) {
+            $history[] = [
+                'status' => $this->status,
+                'timestamp' => $this->status_updated_at,
+                'description' => $this->status_description ?? ucfirst($this->status),
+                'location' => $this->current_location,
+            ];
+        }
+
+        return collect($history)->sortBy('timestamp')->values()->toArray();
+    }
+
+    /**
+     * Get progress percentage for visual display.
+     */
+    public function getProgressPercentage(): int
+    {
+        return match($this->status) {
+            'pending' => 25,
+            'processing' => 50,
+            'shipped' => 75,
+            'delivered' => 100,
+            'cancelled', 'refunded' => 0,
+            default => 25,
+        };
+    }
+
+    /**
+     * Get default status description.
+     */
+    private function getDefaultStatusDescription(string $status): string
+    {
+        return match ($status) {
+            'pending' => 'Order received and awaiting payment confirmation',
+            'processing' => 'Order is being prepared for shipment',
+            'shipped' => 'Order has been shipped and is on its way',
+            'delivered' => 'Order has been successfully delivered',
+            'cancelled' => 'Order has been cancelled',
+            default => 'Order status updated',
+        };
     }
 
     /**
@@ -192,7 +272,7 @@ class Order extends Model
 
         $shippingAmount = $subtotal > 50 ? 0 : 5.99; // Free shipping over $50
 
-        $total = $subtotal + $taxAmount + $shippingAmount - $this->discount_amount;
+        $total = $subtotal + $taxAmount + $shippingAmount - ($this->discount_amount ?? 0);
 
         $this->update([
             'subtotal' => $subtotal,

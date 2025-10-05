@@ -43,6 +43,13 @@
         {{-- Paystack JS SDK --}}
         <script src="https://js.paystack.co/v1/inline.js"></script>
 
+        {{-- Application Configuration --}}
+        <script>
+            window.appConfig = {
+                whatsappPhone: '{{ config('app.whatsapp_phone') }}'
+            };
+        </script>
+
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         @inertiaHead

@@ -257,6 +257,15 @@ export default function Profile({ auth, addresses, mustVerifyEmail, cartCount = 
                                         <span className="ml-2">Devices</span>
                                     </span>
                                 </Link>
+                                <Link
+                                    href="/my-orders"
+                                    className="px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900"
+                                >
+                                    <span className="inline-flex items-center">
+                                        📦
+                                        <span className="ml-2">My Orders</span>
+                                    </span>
+                                </Link>
                             </nav>
                         </div>
 

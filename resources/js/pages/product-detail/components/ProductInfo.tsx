@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/button';
+import { WhatsAppProductContact } from '../../../components/ui/whatsapp-contact';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 
 interface Color {
@@ -220,28 +221,41 @@ const ProductInfo = ({ product, onAddToCart, onToggleWishlist, isInWishlist }: P
         </div>
       </div>
       {/* Action Buttons */}
-      <div className="flex space-x-4">
-        <Button
-          variant="default"
-          size="lg"
-          onClick={handleAddToCart}
-          disabled={!canAddToCart}
-          loading={isAddingToCart}
-          iconName="ShoppingCart"
-          iconPosition="left"
-          className="flex-1"
-        >
-          Add to Cart
-        </Button>
-        <Button
-          variant="outline"
-          size="lg"
-          onClick={onToggleWishlist}
-          iconName="Heart"
-          className={isInWishlist ? 'text-error border-error' : ''}
-        >
-          {isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
-        </Button>
+      <div className="space-y-4">
+        <div className="flex space-x-4">
+          <Button
+            variant="default"
+            size="lg"
+            onClick={handleAddToCart}
+            disabled={!canAddToCart}
+            loading={isAddingToCart}
+            iconName="ShoppingCart"
+            iconPosition="left"
+            className="flex-1"
+          >
+            Add to Cart
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={onToggleWishlist}
+            iconName="Heart"
+            className={isInWishlist ? 'text-error border-error' : ''}
+          >
+            {isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
+          </Button>
+        </div>
+        
+        {/* WhatsApp Contact */}
+        <div className="flex justify-center">
+          <WhatsAppProductContact
+            productName={product?.name}
+            productId={product?.id?.toString()}
+            size="lg"
+            variant="outline"
+            className="w-full sm:w-auto"
+          />
+        </div>
       </div>
       {/* Product Features */}
       <div className="border-t border-border pt-6">

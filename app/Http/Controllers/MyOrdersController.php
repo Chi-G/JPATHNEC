@@ -53,6 +53,9 @@ class MyOrdersController extends Controller
                     'items_count' => $order->items->count(),
                     'tracking_number' => $order->tracking_number,
                     'payment_method' => $order->payment_method,
+                    'status_updated_at' => $order->status_updated_at?->toISOString(),
+                    'current_location' => $order->current_location,
+                    'status_description' => $order->status_description,
                     'shipping_address' => $order->shipping_address ? [
                         'full_name' => $order->shipping_address['full_name'] ?? $order->shipping_address['name'] ?? '',
                         'address_line_1' => $order->shipping_address['address_line_1'] ?? $order->shipping_address['address'] ?? '',
@@ -116,6 +119,9 @@ class MyOrdersController extends Controller
                 'delivered_at' => $order->delivered_at?->toISOString(),
                 'tracking_number' => $order->tracking_number,
                 'payment_method' => $order->payment_method,
+                'status_updated_at' => $order->status_updated_at?->toISOString(),
+                'current_location' => $order->current_location,
+                'status_description' => $order->status_description,
                 'shipping_address' => $order->shipping_address,
                 'billing_address' => $order->billing_address,
                 'notes' => $order->notes,
@@ -196,6 +202,64 @@ class MyOrdersController extends Controller
         }
 
         return redirect()->route('cart')->with('success', $message);
+    }
+
+    public function track($id)
+    {
+        $user = Auth::user();
+        
+        $order = Order::where('user_id', $user->id)
+            ->with(['items.product.images'])
+            ->findOrFail($id);
+
+        // Get cart count
+        $cartCount = CartItem::where('user_id', $user->id)->sum('quantity');
+
+        return Inertia::render('my-orders/tracking', [
+            'order' => [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+                'status' => $order->status,
+                'payment_status' => $order->payment_status,
+                'total_amount' => $order->total_amount,
+                'formatted_total' => $order->currency . number_format($order->total_amount, 2),
+                'currency' => $order->currency ?? '₦',
+                'created_at' => $order->created_at->toISOString(),
+                'shipped_at' => $order->shipped_at?->toISOString(),
+                'delivered_at' => $order->delivered_at?->toISOString(),
+                'tracking_number' => $order->tracking_number,
+                'payment_method' => $order->payment_method,
+                'status_updated_at' => $order->status_updated_at?->toISOString(),
+                'current_location' => $order->current_location,
+                'status_description' => $order->status_description,
+                'shipping_address' => $order->shipping_address,
+                'billing_address' => $order->billing_address,
+                'notes' => $order->notes,
+                'items' => $order->items->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'product_name' => $item->product_name,
+                        'quantity' => $item->quantity,
+                        'unit_price' => $item->unit_price,
+                        'total_price' => $item->total_price,
+                        'formatted_unit_price' => '₦' . number_format($item->unit_price, 2),
+                        'formatted_total_price' => '₦' . number_format($item->total_price, 2),
+                        'size' => $item->size,
+                        'color' => $item->color,
+                        'image_url' => $item->image_url,
+                        'product_image' => $item->image_url,
+                    ];
+                }),
+            ],
+            'auth' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ],
+            ],
+            'cartCount' => $cartCount,
+        ]);
     }
 
     public function downloadInvoice($id)

@@ -16,6 +16,19 @@ use App\Http\Controllers\WishlistController;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::redirect('/home', '/', 301);
 
+// Contact page
+Route::get('/contact', function () {
+    $cartCount = 0;
+    if (Auth::check()) {
+        $cartCount = \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity');
+    }
+    
+    return Inertia::render('contact', [
+        'auth' => Auth::user() ? ['user' => Auth::user()] : null,
+        'cartCount' => $cartCount,
+    ]);
+})->name('contact');
+
 // Product routes
 Route::get('/product-list', [ProductController::class, 'index'])->name('products.index');
 Route::get('/product-list/{filter?}', [ProductController::class, 'index'])->name('product-list');
@@ -37,6 +50,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/my-orders', [MyOrdersController::class, 'index'])->name('my-orders.index');
     Route::get('/my-orders/{id}', [MyOrdersController::class, 'show'])->name('my-orders.show');
+    Route::get('/my-orders/{id}/track', [MyOrdersController::class, 'track'])->name('my-orders.track');
     Route::post('/my-orders/{id}/reorder', [MyOrdersController::class, 'reorder'])->name('my-orders.reorder');
     Route::get('/my-orders/{id}/invoice', [MyOrdersController::class, 'downloadInvoice'])->name('my-orders.invoice');
 }); 

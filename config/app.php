@@ -123,4 +123,15 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | WhatsApp Configuration
+    |--------------------------------------------------------------------------
+    |
+    | WhatsApp phone number for customer support and contact.
+    |
+    */
+
+    'whatsapp_phone' => env('WHATSAPP_PHONE_NUMBER', '+2347065910449'),
+
 ];
