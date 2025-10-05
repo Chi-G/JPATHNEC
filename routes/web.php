@@ -28,9 +28,7 @@ Route::delete('/cart/{item}', [ShoppingCartController::class, 'destroy'])->name(
 // Checkout routes
 Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
-    Route::get('/order/success/{order}', [CheckoutController::class, 'orderSuccess'])->name('order.success');
 });
 
 // Payment routes

@@ -44,68 +44,6 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Process checkout
-     */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'shipping_address' => 'required|array',
-            'billing_address' => 'required|array',
-            'payment_method' => 'required|string',
-            'shipping_method' => 'required|string',
-        ]);
-
-        // Process checkout logic here
-        // This would involve payment processing, order creation, etc.
-
-        return redirect()->route('checkout.success')->with('success', 'Order placed successfully!');
-    }
-
-    /**
-     * Display order success page
-     */
-    public function orderSuccess(\App\Models\Order $order)
-    {
-        // Ensure the order belongs to the authenticated user
-        if ($order->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized access to order');
-        }
-
-        // Load order with relationships
-        $order->load(['items']);
-
-        return Inertia::render('Checkout/Success', [
-            'order' => [
-                'id' => $order->id,
-                'order_number' => $order->order_number,
-                'total_amount' => $order->total_amount,
-                'payment_reference' => $order->payment_reference,
-                'status' => $order->status,
-                'payment_status' => $order->payment_status,
-                'created_at' => $order->created_at->toISOString(),
-                'shipping_address' => $order->shipping_address ? [
-                    'full_name' => $order->shipping_address['fullName'] ?? $order->shipping_address['full_name'] ?? '',
-                    'address_line_1' => $order->shipping_address['address'] ?? $order->shipping_address['address_line_1'] ?? '',
-                    'address_line_2' => $order->shipping_address['address_line_2'] ?? '',
-                    'city' => $order->shipping_address['city'] ?? '',
-                    'state' => $order->shipping_address['state'] ?? '',
-                    'postal_code' => $order->shipping_address['zipCode'] ?? $order->shipping_address['postal_code'] ?? '',
-                    'phone' => $order->shipping_address['phone'] ?? '',
-                ] : null,
-                'items' => $order->items->map(function ($item) {
-                    return [
-                        'id' => $item->id,
-                        'product_name' => $item->product_name,
-                        'quantity' => $item->quantity,
-                        'price' => $item->unit_price,
-                        'total' => $item->total_price,
-                    ];
-                })->toArray(),
-            ],
-        ]);
-    }
-
-    /**
      * Display checkout success page
      */
     public function success(Request $request)
@@ -175,7 +113,7 @@ class CheckoutController extends Controller
                         'id' => $item->product->id,
                         'name' => $item->product->name,
                         'slug' => $item->product->slug,
-                        'image' => $item->product->primary_image_url ?? 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
+                        'image' => $item->product->primary_image_url ?? asset('no_image.png'),
                         'price' => (float) $item->product->price,
                         'in_stock' => $item->product->inStock(),
                     ],
