@@ -5,11 +5,37 @@ import { cn } from "../../utils/cn";
 import Button from "./button";
 import Input from "./input";
 
-const Select = React.forwardRef(({
+interface SelectOption {
+    value: string | number;
+    label: React.ReactNode;
+    disabled?: boolean;
+    description?: React.ReactNode;
+}
+
+interface SelectProps {
+    className?: string;
+    options?: SelectOption[];
+    value?: string | number | (string | number)[];
+    placeholder?: string;
+    multiple?: boolean;
+    disabled?: boolean;
+    required?: boolean;
+    label?: React.ReactNode;
+    description?: React.ReactNode;
+    error?: React.ReactNode;
+    searchable?: boolean;
+    clearable?: boolean;
+    loading?: boolean;
+    id?: string;
+    name?: string;
+    onChange?: (value: string | number | (string | number)[]) => void;
+    onOpenChange?: (open: boolean) => void;
+}
+
+const Select = React.forwardRef<HTMLButtonElement, SelectProps>(({
     className,
     options = [],
     value,
-    defaultValue,
     placeholder = "Select an option",
     multiple = false,
     disabled = false,
@@ -34,9 +60,9 @@ const Select = React.forwardRef(({
 
     // Filter options based on search
     const filteredOptions = searchable && searchTerm
-        ? options?.filter((option: { label: string; value: { toString: () => string; }; }) =>
-            option?.label?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
-            (option?.value && option?.value?.toString()?.toLowerCase()?.includes(searchTerm?.toLowerCase()))
+        ? options?.filter((option) =>
+            typeof option.label === 'string' && option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            option.value.toString().toLowerCase().includes(searchTerm.toLowerCase())
         )
         : options;
 
@@ -44,15 +70,15 @@ const Select = React.forwardRef(({
     const getSelectedDisplay = () => {
         if (!value) return placeholder;
 
-        if (multiple) {
-            const selectedOptions = options?.filter((opt: { value: string | number; }) => value?.includes(opt?.value));
+        if (multiple && Array.isArray(value)) {
+            const selectedOptions = options?.filter((opt) => value.includes(opt.value));
             if (selectedOptions?.length === 0) return placeholder;
-            if (selectedOptions?.length === 1) return selectedOptions?.[0]?.label;
-            return `${selectedOptions?.length} items selected`;
+            if (selectedOptions?.length === 1) return selectedOptions[0].label;
+            return `${selectedOptions.length} items selected`;
         }
 
-        const selectedOption = options?.find((opt: { value: string | number; }) => opt?.value === value);
-        return selectedOption ? selectedOption?.label : placeholder;
+        const selectedOption = options?.find((opt) => opt.value === value);
+        return selectedOption ? selectedOption.label : placeholder;
     };
 
     const handleToggle = () => {
@@ -66,15 +92,15 @@ const Select = React.forwardRef(({
         }
     };
 
-    const handleOptionSelect = (option: { value: string | number; }) => {
-        if (multiple) {
+    const handleOptionSelect = (option: SelectOption) => {
+        if (multiple && Array.isArray(value)) {
             const newValue = value || [];
-            const updatedValue = newValue?.includes(option?.value)
-                ? newValue?.filter((v: string | number) => v !== option?.value)
-                : [...newValue, option?.value];
+            const updatedValue = newValue.includes(option.value)
+                ? newValue.filter((v) => v !== option.value)
+                : [...newValue, option.value];
             onChange?.(updatedValue);
         } else {
-            onChange?.(option?.value);
+            onChange?.(option.value);
             setIsOpen(false);
             onOpenChange?.(false);
         }
@@ -90,13 +116,13 @@ const Select = React.forwardRef(({
     };
 
     const isSelected = (optionValue: string | number) => {
-        if (multiple) {
-            return value?.includes(optionValue) || false;
+        if (multiple && Array.isArray(value)) {
+            return value.includes(optionValue);
         }
         return value === optionValue;
     };
 
-    const hasValue = multiple ? value?.length > 0 : value !== undefined && value !== '';
+    const hasValue = multiple && Array.isArray(value) ? value.length > 0 : value !== undefined && value !== '';
 
     return (
         <div className={cn("relative", className)}>
@@ -124,7 +150,7 @@ const Select = React.forwardRef(({
                     )}
                     onClick={handleToggle}
                     disabled={disabled}
-                    aria-expanded={isOpen ? true : false}
+                    {...(isOpen ? { "aria-expanded": "true" } : { "aria-expanded": "false" })}
                     aria-haspopup="listbox"
                     {...props}
                 >
@@ -156,20 +182,21 @@ const Select = React.forwardRef(({
                 {/* Hidden native select for form submission */}
                 <select
                     name={name}
-                    value={value || ''}
+                    value={Array.isArray(value) ? '' : (value || '')}
                     onChange={() => { }} // Controlled by our custom logic
                     className="sr-only"
                     tabIndex={-1}
                     multiple={multiple}
                     required={required}
+                    aria-label={typeof label === 'string' ? label : "Select option"}
                 >
                     <option value="">Select...</option>
-                    {options?.map((option: { value: React.Key | readonly string[] | null | undefined; label: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; }) => (
+                    {options?.map((option) => (
                         <option
-                            key={option?.value ?? ''}
-                            value={option?.value !== null ? option?.value : ''}
+                            key={option.value}
+                            value={option.value}
                         >
-                            {option?.label}
+                            {option.label}
                         </option>
                     ))}
                 </select>
@@ -197,25 +224,25 @@ const Select = React.forwardRef(({
                                     {searchTerm ? 'No options found' : 'No options available'}
                                 </div>
                             ) : (
-                                filteredOptions?.map((option: { value: React.Key | null | undefined; disabled?: boolean; label: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; description: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; }) => (
+                                filteredOptions?.map((option) => (
                                     <div
-                                        key={option?.value}
+                                        key={option.value}
                                         className={cn(
                                             "relative flex cursor-pointer select-none items-center rounded-sm px-3 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
-                                            (option?.value !== undefined && option?.value !== null && (typeof option?.value === "string" || typeof option?.value === "number") && isSelected(option.value)) && "bg-primary text-primary-foreground",
-                                            option?.disabled && "pointer-events-none opacity-50"
+                                            isSelected(option.value) && "bg-primary text-primary-foreground",
+                                            option.disabled && "pointer-events-none opacity-50"
                                         )}
                                         onClick={() => {
-                                            if (!option?.disabled && (typeof option?.value === "string" || typeof option?.value === "number")) {
-                                                handleOptionSelect(option as { value: string | number });
+                                            if (!option.disabled) {
+                                                handleOptionSelect(option);
                                             }
                                         }}
                                     >
-                                        <span className="flex-1">{option?.label}</span>
-                                        {multiple && (option?.value !== undefined && option?.value !== null) && isSelected(option.value as string | number) && (
+                                        <span className="flex-1">{option.label}</span>
+                                        {multiple && isSelected(option.value) && (
                                             <Check className="h-4 w-4" />
                                         )}
-                                        {option?.description && (
+                                        {option.description && (
                                             <span className="text-xs text-muted-foreground ml-2">
                                                 {option?.description}
                                             </span>
