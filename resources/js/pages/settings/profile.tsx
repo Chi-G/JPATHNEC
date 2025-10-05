@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ChevronRight, User, MapPin, Plus, Edit, Trash2, CreditCard } from 'lucide-react';
+import { ChevronRight, User, MapPin, Plus, Edit, Trash2, Lock, Shield, Eye, EyeOff } from 'lucide-react';
 import Button from '../../components/ui/button';
 import Input from '../../components/ui/input';
+import Header from '../../components/ui/header';
+import toast from 'react-hot-toast';
 
 interface User {
     id: number;
@@ -18,8 +20,7 @@ interface Address {
     id: number;
     type: 'billing' | 'shipping';
     is_default: boolean;
-    first_name: string;
-    last_name: string;
+    full_name: string;
     company?: string;
     address_line_1: string;
     address_line_2?: string;
@@ -37,14 +38,18 @@ interface ProfileProps {
     addresses: Address[];
     mustVerifyEmail: boolean;
     status?: string;
+    cartCount?: number;
 }
 
-export default function Profile({ auth, addresses, mustVerifyEmail }: ProfileProps) {
-    const [activeTab, setActiveTab] = useState<'profile' | 'addresses'>('profile');
+export default function Profile({ auth, addresses, mustVerifyEmail, cartCount = 0 }: ProfileProps) {
+    const [activeTab, setActiveTab] = useState<'profile' | 'addresses' | 'password' | 'two-factor'>('profile');
     const [editingAddress, setEditingAddress] = useState<Address | null>(null);
     const [showAddressForm, setShowAddressForm] = useState(false);
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, patch, processing, errors } = useForm({
         name: auth.user.name || '',
         email: auth.user.email || '',
         phone: auth.user.phone || '',
@@ -52,10 +57,9 @@ export default function Profile({ auth, addresses, mustVerifyEmail }: ProfilePro
         gender: auth.user.gender || '',
     });
 
-    const { data: addressData, setData: setAddressData, post: postAddress, put: putAddress, delete: deleteAddress, processing: addressProcessing, errors: addressErrors, reset: resetAddress } = useForm({
+    const { data: addressData, setData: setAddressData, post: postAddress, patch: patchAddress, delete: deleteAddress, processing: addressProcessing, errors: addressErrors, reset: resetAddress } = useForm({
         type: 'shipping',
-        first_name: '',
-        last_name: '',
+        full_name: '',
         company: '',
         address_line_1: '',
         address_line_2: '',
@@ -67,22 +71,38 @@ export default function Profile({ auth, addresses, mustVerifyEmail }: ProfilePro
         is_default: false,
     });
 
+    const { data: passwordData, setData: setPasswordData, put: putPassword, processing: passwordProcessing, errors: passwordErrors, reset: resetPasswordForm } = useForm({
+        current_password: '',
+        password: '',
+        password_confirmation: '',
+    });
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post('/settings/profile', {
+        patch('/settings/profile', {
             preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Profile updated successfully!');
+            },
+            onError: () => {
+                toast.error('Failed to update profile. Please check the errors and try again.');
+            }
         });
     };
 
     const handleAddressSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (editingAddress) {
-            putAddress(`/settings/addresses/${editingAddress.id}`, {
+            patchAddress(`/settings/addresses/${editingAddress.id}`, {
                 preserveScroll: true,
                 onSuccess: () => {
                     setEditingAddress(null);
                     setShowAddressForm(false);
                     resetAddress();
+                    toast.success('Address updated successfully!');
+                },
+                onError: () => {
+                    toast.error('Failed to update address. Please check the errors and try again.');
                 }
             });
         } else {
@@ -91,6 +111,10 @@ export default function Profile({ auth, addresses, mustVerifyEmail }: ProfilePro
                 onSuccess: () => {
                     setShowAddressForm(false);
                     resetAddress();
+                    toast.success('Address added successfully!');
+                },
+                onError: () => {
+                    toast.error('Failed to add address. Please check the errors and try again.');
                 }
             });
         }
@@ -100,8 +124,7 @@ export default function Profile({ auth, addresses, mustVerifyEmail }: ProfilePro
         setEditingAddress(address);
         setAddressData({
             type: address.type,
-            first_name: address.first_name,
-            last_name: address.last_name,
+            full_name: address.full_name,
             company: address.company || '',
             address_line_1: address.address_line_1,
             address_line_2: address.address_line_2 || '',
@@ -119,13 +142,36 @@ export default function Profile({ auth, addresses, mustVerifyEmail }: ProfilePro
         if (confirm('Are you sure you want to delete this address?')) {
             deleteAddress(`/settings/addresses/${addressId}`, {
                 preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Address deleted successfully!');
+                },
+                onError: () => {
+                    toast.error('Failed to delete address. Please try again.');
+                }
             });
         }
+    };
+
+    const handlePasswordSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        putPassword('/settings/password', {
+            preserveScroll: true,
+            onSuccess: () => {
+                resetPasswordForm();
+                toast.success('Password updated successfully!');
+            },
+            onError: () => {
+                toast.error('Failed to update password. Please check the errors and try again.');
+            }
+        });
     };
 
     return (
         <>
             <Head title="Profile Settings - JPATHNEC" />
+            
+            {/* Add Header */}
+            <Header user={auth.user} cartCount={cartCount} />
             
             <div className="min-h-screen bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -171,6 +217,46 @@ export default function Profile({ auth, addresses, mustVerifyEmail }: ProfilePro
                                     <MapPin className="h-4 w-4 inline mr-2" />
                                     Addresses ({addresses.length})
                                 </button>
+                                <button
+                                    onClick={() => setActiveTab('password')}
+                                    className={`px-6 py-4 text-sm font-medium border-b-2 ${
+                                        activeTab === 'password'
+                                            ? 'border-primary text-primary'
+                                            : 'border-transparent text-gray-600 hover:text-gray-900'
+                                    }`}
+                                >
+                                    <Lock className="h-4 w-4 inline mr-2" />
+                                    Password
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('two-factor')}
+                                    className={`px-6 py-4 text-sm font-medium border-b-2 ${
+                                        activeTab === 'two-factor'
+                                            ? 'border-primary text-primary'
+                                            : 'border-transparent text-gray-600 hover:text-gray-900'
+                                    }`}
+                                >
+                                    <Shield className="h-4 w-4 inline mr-2" />
+                                    Two-Factor Auth
+                                </button>
+                                <Link
+                                    href="/settings/appearance"
+                                    className="px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900"
+                                >
+                                    <span className="inline-flex items-center">
+                                        🎨
+                                        <span className="ml-2">Appearance</span>
+                                    </span>
+                                </Link>
+                                <Link
+                                    href="/settings/devices"
+                                    className="px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900"
+                                >
+                                    <span className="inline-flex items-center">
+                                        📱
+                                        <span className="ml-2">Devices</span>
+                                    </span>
+                                </Link>
                             </nav>
                         </div>
 
@@ -203,10 +289,14 @@ export default function Profile({ auth, addresses, mustVerifyEmail }: ProfilePro
                                                     <Input
                                                         type="email"
                                                         value={data.email}
-                                                        onChange={(e) => setData('email', e.target.value)}
                                                         placeholder="Enter your email"
-                                                        className={errors.email ? 'border-red-500' : ''}
+                                                        className={`bg-gray-50 ${errors.email ? 'border-red-500' : ''}`}
+                                                        disabled
+                                                        readOnly
                                                     />
+                                                    <p className="text-gray-500 text-xs mt-1">
+                                                        Email cannot be changed for security reasons. Contact support if you need to update your email.
+                                                    </p>
                                                     {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                                                     {mustVerifyEmail && !auth.user.email_verified_at && (
                                                         <p className="text-orange-600 text-sm mt-1">
@@ -226,7 +316,7 @@ export default function Profile({ auth, addresses, mustVerifyEmail }: ProfilePro
                                                         type="tel"
                                                         value={data.phone}
                                                         onChange={(e) => setData('phone', e.target.value)}
-                                                        placeholder="+234 801 234 5678"
+                                                        placeholder="07065910449"
                                                         className={errors.phone ? 'border-red-500' : ''}
                                                     />
                                                     {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
@@ -258,8 +348,6 @@ export default function Profile({ auth, addresses, mustVerifyEmail }: ProfilePro
                                                         <option value="">Select Gender</option>
                                                         <option value="male">Male</option>
                                                         <option value="female">Female</option>
-                                                        <option value="other">Other</option>
-                                                        <option value="prefer_not_to_say">Prefer not to say</option>
                                                     </select>
                                                     {errors.gender && <p className="text-red-500 text-sm mt-1">{errors.gender}</p>}
                                                 </div>
@@ -271,38 +359,6 @@ export default function Profile({ auth, addresses, mustVerifyEmail }: ProfilePro
                                                 </Button>
                                             </div>
                                         </form>
-                                    </div>
-
-                                    {/* Quick Links */}
-                                    <div className="border-t pt-6">
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Settings</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <Link
-                                                href="/settings/password"
-                                                className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-                                            >
-                                                <div className="flex items-center">
-                                                    <CreditCard className="h-5 w-5 text-primary mr-3" />
-                                                    <div>
-                                                        <p className="font-medium">Change Password</p>
-                                                        <p className="text-sm text-gray-600">Update your account password</p>
-                                                    </div>
-                                                </div>
-                                            </Link>
-                                            
-                                            <Link
-                                                href="/settings/two-factor"
-                                                className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-                                            >
-                                                <div className="flex items-center">
-                                                    <CreditCard className="h-5 w-5 text-primary mr-3" />
-                                                    <div>
-                                                        <p className="font-medium">Two-Factor Authentication</p>
-                                                        <p className="text-sm text-gray-600">Secure your account</p>
-                                                    </div>
-                                                </div>
-                                            </Link>
-                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -361,29 +417,19 @@ export default function Profile({ auth, addresses, mustVerifyEmail }: ProfilePro
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 gap-4">
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                            First Name *
+                                                            Full Name *
                                                         </label>
                                                         <Input
                                                             type="text"
-                                                            value={addressData.first_name}
-                                                            onChange={(e) => setAddressData('first_name', e.target.value)}
-                                                            className={addressErrors.first_name ? 'border-red-500' : ''}
+                                                            value={addressData.full_name}
+                                                            onChange={(e) => setAddressData('full_name', e.target.value)}
+                                                            placeholder="Enter full name"
+                                                            className={addressErrors.full_name ? 'border-red-500' : ''}
                                                         />
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                            Last Name *
-                                                        </label>
-                                                        <Input
-                                                            type="text"
-                                                            value={addressData.last_name}
-                                                            onChange={(e) => setAddressData('last_name', e.target.value)}
-                                                            className={addressErrors.last_name ? 'border-red-500' : ''}
-                                                        />
+                                                        {addressErrors.full_name && <p className="text-red-500 text-sm mt-1">{addressErrors.full_name}</p>}
                                                     </div>
                                                 </div>
 
@@ -533,7 +579,7 @@ export default function Profile({ auth, addresses, mustVerifyEmail }: ProfilePro
                                                 </div>
                                                 
                                                 <div className="space-y-1 text-sm">
-                                                    <p className="font-medium">{address.first_name} {address.last_name}</p>
+                                                    <p className="font-medium">{address.full_name}</p>
                                                     {address.company && <p>{address.company}</p>}
                                                     <p>{address.address_line_1}</p>
                                                     {address.address_line_2 && <p>{address.address_line_2}</p>}
@@ -569,6 +615,153 @@ export default function Profile({ auth, addresses, mustVerifyEmail }: ProfilePro
                                             <p className="text-gray-600 mb-4">Add your first address to get started with orders</p>
                                         </div>
                                     )}
+                                </div>
+                            )}
+
+                            {/* Password Tab */}
+                            {activeTab === 'password' && (
+                                <div className="space-y-6">
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Change Password</h3>
+                                        <form onSubmit={handlePasswordSubmit} className="space-y-6 max-w-md">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Current Password *
+                                </label>
+                                <div className="relative">
+                                    <Input
+                                        type={showCurrentPassword ? "text" : "password"}
+                                        value={passwordData.current_password}
+                                        onChange={(e) => setPasswordData('current_password', e.target.value)}
+                                        placeholder="Enter your current password"
+                                        className={passwordErrors.current_password ? 'border-red-500 pr-10' : 'pr-10'}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                    >
+                                        {showCurrentPassword ? (
+                                            <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                                        ) : (
+                                            <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                                        )}
+                                    </button>
+                                </div>
+                                {passwordErrors.current_password && <p className="text-red-500 text-sm mt-1">{passwordErrors.current_password}</p>}
+                            </div>                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    New Password *
+                                                </label>
+                                                <div className="relative">
+                                                    <Input
+                                                        type={showNewPassword ? "text" : "password"}
+                                                        value={passwordData.password}
+                                                        onChange={(e) => setPasswordData('password', e.target.value)}
+                                                        placeholder="Enter your new password"
+                                                        className={passwordErrors.password ? 'border-red-500 pr-10' : 'pr-10'}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                                    >
+                                                        {showNewPassword ? (
+                                                            <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                                                        ) : (
+                                                            <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                                {passwordErrors.password && <p className="text-red-500 text-sm mt-1">{passwordErrors.password}</p>}
+                                                <p className="text-gray-500 text-xs mt-1">
+                                                    Password must be at least 8 characters long
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Confirm New Password *
+                                                </label>
+                                                <div className="relative">
+                                                    <Input
+                                                        type={showConfirmPassword ? "text" : "password"}
+                                                        value={passwordData.password_confirmation}
+                                                        onChange={(e) => setPasswordData('password_confirmation', e.target.value)}
+                                                        placeholder="Confirm your new password"
+                                                        className={passwordErrors.password_confirmation ? 'border-red-500 pr-10' : 'pr-10'}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                                    >
+                                                        {showConfirmPassword ? (
+                                                            <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                                                        ) : (
+                                                            <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                                {passwordErrors.password_confirmation && <p className="text-red-500 text-sm mt-1">{passwordErrors.password_confirmation}</p>}
+                                            </div>
+
+                                            <div className="flex justify-end">
+                                                <Button type="submit" disabled={passwordProcessing}>
+                                                    {passwordProcessing ? 'Updating...' : 'Update Password'}
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Two-Factor Authentication Tab */}
+                            {activeTab === 'two-factor' && (
+                                <div className="space-y-6">
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Two-Factor Authentication</h3>
+                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                                            <div className="flex items-center">
+                                                <Shield className="h-5 w-5 text-blue-600 mr-2" />
+                                                <p className="text-sm text-blue-800">
+                                                    Add an extra layer of security to your account by enabling two-factor authentication.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="space-y-4">
+                                            <div className="border rounded-lg p-4">
+                                                <h4 className="font-medium text-gray-900 mb-2">Authenticator App</h4>
+                                                <p className="text-sm text-gray-600 mb-4">
+                                                    Use an authenticator app like Google Authenticator or Authy to generate verification codes.
+                                                </p>
+                                                <Button variant="outline">
+                                                    Enable Authenticator
+                                                </Button>
+                                            </div>
+                                            
+                                            <div className="border rounded-lg p-4">
+                                                <h4 className="font-medium text-gray-900 mb-2">SMS Verification</h4>
+                                                <p className="text-sm text-gray-600 mb-4">
+                                                    Receive verification codes via text message to your phone.
+                                                </p>
+                                                <Button variant="outline">
+                                                    Enable SMS
+                                                </Button>
+                                            </div>
+                                            
+                                            <div className="border rounded-lg p-4">
+                                                <h4 className="font-medium text-gray-900 mb-2">Recovery Codes</h4>
+                                                <p className="text-sm text-gray-600 mb-4">
+                                                    Generate backup codes that you can use if you lose access to your primary 2FA method.
+                                                </p>
+                                                <Button variant="outline">
+                                                    Generate Codes
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
