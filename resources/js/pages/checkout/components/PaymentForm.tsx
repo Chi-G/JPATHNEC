@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { router } from '@inertiajs/react';
 import { toast } from 'react-hot-toast';
 import Button from '../../../components/ui/button';
 import Icon from '../../../components/AppIcon';
 import { CheckoutFormData, PaymentMethod, User, CartSummary } from '../../../types';
 
-// Extend window object for Paystack
 declare global {
   interface Window {
-    PaystackPop: {
+    PaystackPop?: {
       setup: (config: PaystackConfig) => {
         openIframe: () => void;
       };
@@ -43,7 +41,6 @@ interface PaymentFormProps {
   auth?: {
     user?: User | null;
   };
-  paystack_public_key?: string;
 }
 
 const PaymentForm: React.FC<PaymentFormProps> = ({
@@ -52,8 +49,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   setFormData,
   paymentMethods,
   cartSummary,
-  auth,
-  paystack_public_key
+  auth
 }) => {
   const [paymentMethod, setPaymentMethod] = useState(formData?.payment?.method || 'card');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -125,13 +121,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           price: formData?.delivery?.price || 0,
           option: formData?.delivery?.option || 'standard'
         },
-        billing: formData?.shipping, // Use shipping as billing for now
+        billing: formData?.shipping,
         payment: {
           method: paymentMethod
         }
       };
-
-      console.log('Sending order data:', orderData); // Debug log
       
       const response = await fetch('/payment/initialize', {
         method: 'POST',
@@ -142,34 +136,23 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         },
         body: JSON.stringify({
           order_data: orderData,
-          amount: cartSummary.total * 100, // Convert to kobo for Paystack
+          amount: cartSummary.total * 100,
         }),
       });
 
       const data = await response.json();
 
       if (response.ok && data.status) {
-        // Initialize Paystack payment
-        if (window.PaystackPop) {
-          const handler = window.PaystackPop.setup({
-            key: data.data.public_key || paystack_public_key || '',
-            email: auth.user.email,
-            amount: cartSummary.total * 100,
-            currency: 'NGN',
-            reference: data.data.reference,
-            callback: (response: PaystackResponse) => {
-              // Payment successful
-              verifyPayment(response.reference);
-            },
-            onClose: () => {
-              setIsProcessing(false);
-              toast.error('Payment was cancelled');
-            },
-          });
+        if (data.data.authorization_url) {
+          sessionStorage.removeItem('fromCart');
           
-          handler.openIframe();
+          // Show loading message
+          toast.success('Redirecting to Paystack payment page...');
+          
+          // Redirect to Paystack's hosted checkout
+          window.location.href = data.data.authorization_url;
         } else {
-          throw new Error('Paystack script not loaded');
+          throw new Error('No authorization URL received from Paystack');
         }
       } else {
         // Log the response for debugging
@@ -179,54 +162,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     } catch (error) {
       console.error('Payment initialization error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to initialize payment');
-      setIsProcessing(false);
-    }
-  };
-
-  const verifyPayment = async (reference: string) => {
-    try {
-      const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-      
-      const response = await fetch('/payment/verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-CSRF-TOKEN': token || '',
-        },
-        body: JSON.stringify({ reference }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.status) {
-        // Payment successful - clear session data
-        sessionStorage.removeItem('fromCart');
-        
-        // Show success message
-        toast.success('Payment successful! Your order has been confirmed.');
-        
-        // Open success page in new tab with transaction details
-        const successUrl = `/order/success/${data.order_id}`;
-        window.open(successUrl, '_blank');
-        
-        // Redirect main page back to home after a short delay
-        setTimeout(() => {
-          router.visit('/', { replace: true });
-        }, 2000);
-        
-      } else {
-        // If verification fails, try to use the callback URL approach
-        console.warn('AJAX verification failed, redirecting to callback URL');
-        window.location.href = `/payment/callback?reference=${reference}`;
-      }
-    } catch (error) {
-      console.error('Payment verification error:', error);
-      
-      // Fallback: redirect to callback URL for server-side verification
-      console.warn('Falling back to callback URL for verification');
-      window.location.href = `/payment/callback?reference=${reference}`;
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -271,7 +206,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
             <div className="flex items-center gap-4">
               <Icon name="Shield" size={20} className="text-success" />
               <div className="text-sm">
-                <span className="text-muted-foreground">Secure payment powered by Paystack</span>
+                <span className="text-muted-foreground">You'll be redirected to Paystack's secure payment page</span>
                 {auth?.user?.email && (
                   <div className="text-xs text-muted-foreground mt-1">
                     Payment email: {auth.user.email}
@@ -284,6 +219,21 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Total Amount:</span>
                 <span className="text-lg font-semibold text-foreground">₦{cartSummary?.total?.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <Icon name="Info" size={20} className="text-blue-600 mt-0.5" />
+                <div className="text-sm">
+                  <p className="text-blue-800 font-medium mb-1">Payment Process:</p>
+                  <ul className="text-blue-700 space-y-1 text-xs">
+                    <li>• Click "Pay with Paystack" to continue</li>
+                    <li>• You'll be redirected to checkout.paystack.com</li>
+                    <li>• Complete your payment securely on Paystack</li>
+                    <li>• You'll be redirected back after payment</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -335,7 +285,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           loading={isProcessing}
           disabled={isProcessing || paymentMethod !== 'card'}
         >
-          {isProcessing ? 'Processing...' : 'Initiate Payment'}
+          {isProcessing ? 'Redirecting to Paystack...' : 'Pay with Paystack'}
         </Button>
       </div>
     </div>
