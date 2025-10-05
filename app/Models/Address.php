@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Address extends Model
 {
@@ -12,8 +13,7 @@ class Address extends Model
     protected $fillable = [
         'user_id',
         'type',
-        'first_name',
-        'last_name',
+        'full_name',
         'company',
         'address_line_1',
         'address_line_2',
@@ -57,7 +57,7 @@ class Address extends Model
     /**
      * Get the user that owns the address.
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -91,7 +91,7 @@ class Address extends Model
      */
     public function getFullNameAttribute(): string
     {
-        return trim($this->first_name . ' ' . $this->last_name);
+        return $this->attributes['full_name'] ?? '';
     }
 
     /**
@@ -145,8 +145,7 @@ class Address extends Model
     public function toOrderFormat(): array
     {
         return [
-            'first_name' => $this->first_name,
-            'last_name' => $this->last_name,
+            'full_name' => $this->full_name,
             'company' => $this->company,
             'address_line_1' => $this->address_line_1,
             'address_line_2' => $this->address_line_2,
@@ -163,7 +162,7 @@ class Address extends Model
      */
     public function isComplete(): bool
     {
-        $required = ['first_name', 'last_name', 'address_line_1', 'city', 'state', 'postal_code', 'country'];
+        $required = ['full_name', 'address_line_1', 'city', 'state', 'postal_code', 'country'];
 
         foreach ($required as $field) {
             if (empty($this->{$field})) {

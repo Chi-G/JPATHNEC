@@ -69,7 +69,7 @@ class Order extends Model
     /**
      * Get the user that owns the order.
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -77,7 +77,7 @@ class Order extends Model
     /**
      * Get the order items.
      */
-    public function items()
+    public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }
