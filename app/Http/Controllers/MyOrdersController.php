@@ -145,18 +145,57 @@ class MyOrdersController extends Controller
         $user = Auth::user();
         
         $order = Order::where('user_id', $user->id)
-            ->with(['items.product'])
+            ->with(['items'])
             ->findOrFail($id);
+
+        $addedItems = 0;
+        $skippedItems = [];
 
         // Add order items to cart
         foreach ($order->items as $item) {
-            if ($item->product && $item->product->is_active) {
-                // Add to cart logic here
-                // This would typically use your existing cart service
+            // Check if we have a valid product_id and the product still exists
+            if ($item->product_id) {
+                $product = \App\Models\Product::find($item->product_id);
+                
+                if ($product && $product->is_active) {
+                    // Check if item already exists in cart
+                    $cartItem = CartItem::where('user_id', $user->id)
+                        ->where('product_id', $item->product_id)
+                        ->where('size', $item->size)
+                        ->where('color', $item->color)
+                        ->first();
+
+                    if ($cartItem) {
+                        // Update quantity
+                        $cartItem->quantity += $item->quantity;
+                        $cartItem->save();
+                    } else {
+                        // Create new cart item
+                        CartItem::create([
+                            'user_id' => $user->id,
+                            'product_id' => $item->product_id,
+                            'quantity' => $item->quantity,
+                            'size' => $item->size,
+                            'color' => $item->color,
+                            'price' => $product->price,
+                        ]);
+                    }
+                    $addedItems++;
+                } else {
+                    $skippedItems[] = $item->product_name . ' (no longer available)';
+                }
+            } else {
+                $skippedItems[] = $item->product_name . ' (product not found)';
             }
         }
 
-        return redirect()->route('cart.index')->with('success', 'Items from order #' . $order->order_number . ' have been added to your cart.');
+        $message = "Added {$addedItems} items from order #{$order->order_number} to your cart.";
+        
+        if (!empty($skippedItems)) {
+            $message .= ' Some items were skipped: ' . implode(', ', $skippedItems);
+        }
+
+        return redirect()->route('cart')->with('success', $message);
     }
 
     public function downloadInvoice($id)
@@ -164,12 +203,18 @@ class MyOrdersController extends Controller
         $user = Auth::user();
         
         $order = Order::where('user_id', $user->id)
-            ->with(['items.product'])
+            ->with(['items'])
             ->findOrFail($id);
 
-        // Generate PDF invoice
-        // You can use packages like dompdf or tcpdf for this
+        // Only allow invoice download for paid orders
+        if ($order->payment_status !== 'paid') {
+            return redirect()->back()->with('error', 'Invoice is only available for paid orders.');
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('invoices.order', compact('order'));
         
-        return response()->json(['message' => 'Invoice download feature coming soon']);
+        $fileName = 'invoice-' . $order->order_number . '.pdf';
+        
+        return $pdf->download($fileName);
     }
 }

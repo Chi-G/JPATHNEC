@@ -19,6 +19,8 @@ class OrderItem extends Model
         'product_sku',
         'product_image',
         'product_options',
+        'size',
+        'color',
     ];
 
     protected $casts = [

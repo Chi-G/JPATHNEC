@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
-import { ChevronRight, Download, Eye, Package, Search, RefreshCw, Calendar, CreditCard, MapPin } from 'lucide-react';
+import { ChevronRight, Download, Eye, Package, Search, RefreshCw, Calendar, CreditCard, MapPin, RotateCcw } from 'lucide-react';
 import Button from '../../components/ui/button';
 import Input from '../../components/ui/input';
 import Header from '../../components/ui/header';
@@ -286,10 +286,25 @@ export default function MyOrders({ auth, orders, filters, cartCount = 0 }: MyOrd
                                                         <Eye className="h-4 w-4 mr-1" />
                                                         {expandedOrder === order.id ? 'Hide' : 'View'} Details
                                                     </Button>
-                                                    <Button variant="outline" size="sm">
-                                                        <Download className="h-4 w-4 mr-1" />
-                                                        Invoice
-                                                    </Button>
+                                                    {order.payment_status === 'paid' ? (
+                                                        <Link href={`/my-orders/${order.id}/invoice`}>
+                                                            <Button variant="outline" size="sm">
+                                                                <Download className="h-4 w-4 mr-1" />
+                                                                Invoice
+                                                            </Button>
+                                                        </Link>
+                                                    ) : (
+                                                        <Button variant="outline" size="sm" disabled title="Invoice only available for paid orders">
+                                                            <Download className="h-4 w-4 mr-1" />
+                                                            Invoice
+                                                        </Button>
+                                                    )}
+                                                    <Link href={`/my-orders/${order.id}/reorder`} method="post">
+                                                        <Button variant="outline" size="sm">
+                                                            <RotateCcw className="h-4 w-4 mr-1" />
+                                                            Reorder
+                                                        </Button>
+                                                    </Link>
                                                     {order.status === 'shipped' && (
                                                         <Button size="sm">Track Order</Button>
                                                     )}
