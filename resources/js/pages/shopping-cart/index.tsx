@@ -5,7 +5,6 @@ import Header from '../../components/ui/header';
 import CartItem from './components/CartItem';
 import OrderSummary from './components/OrderSummary';
 import EmptyCart from './components/EmptyCart';
-import SavedItems from './components/SavedItems';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/button';
 
@@ -33,17 +32,6 @@ interface CartSummary {
   item_count: number;
 }
 
-interface SavedItem {
-  id: number;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  size: string;
-  color: string;
-  image: string;
-  category: string;
-}
-
 interface ShoppingCartProps {
   cartItems: CartItem[];
   cartSummary: CartSummary;
@@ -53,15 +41,12 @@ interface ShoppingCartProps {
 
 const ShoppingCart: React.FC<ShoppingCartProps> = ({ cartItems, cartSummary, user, cartCount = 0 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [appliedPromoCode, setAppliedPromoCode] = useState<string | undefined>(undefined);
-  const [promoDiscount, setPromoDiscount] = useState(0);
   const [showSavedItems, setShowSavedItems] = useState(false);
-  const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
 
   const handleUpdateQuantity = async (itemId: number, newQuantity: number) => {
     if (!user) {
       router.visit('/login');
-      return;
+      return; 
     }
 
     try {
@@ -128,23 +113,15 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cartItems, cartSummary, use
     }
   };
 
-  const handleMoveToWishlist = async (_itemId: number) => {
+  const handleMoveToWishlist = async (itemId: number) => {
     // Placeholder: Implement wishlist API
+    console.log('Move to wishlist:', itemId);
     toast.error('Wishlist functionality not implemented yet.');
   };
 
-  const handleMoveToCart = async (_itemId: number) => {
-    // Placeholder: Implement wishlist API
-    toast.error('Wishlist functionality not implemented yet.');
-  };
-
-  const handleRemoveFromSaved = (_itemId: number) => {
-    // Placeholder: Implement wishlist API
-    toast.error('Wishlist functionality not implemented yet.');
-  };
-
-  const handleApplyPromoCode = async (_code: string) => {
+  const handleApplyPromoCode = async (code: string) => {
     // Placeholder: Implement promo code API
+    console.log('Apply promo code:', code);
     toast.error('Promo code functionality not implemented yet.');
     return { success: false, error: 'Promo codes not supported.' };
   };
@@ -195,7 +172,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cartItems, cartSummary, use
                 className="flex items-center gap-2"
               >
                 <Icon name="Heart" size={16} />
-                Saved Items ({savedItems?.length})
+                Saved Items (0)
               </Button>
             </div>
           )}
@@ -219,7 +196,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cartItems, cartSummary, use
                 ))}
               </div>
 
-              {/* Saved Items Section */}
+              {/* Saved Items Section - Commented out until savedItems state is implemented
               {showSavedItems && savedItems?.length > 0 && (
                 <div className="mt-8 pt-8 border-t border-border">
                   <SavedItems
@@ -229,6 +206,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cartItems, cartSummary, use
                   />
                 </div>
               )}
+              */}
             </div>
 
             {/* Order Summary */}
@@ -240,8 +218,8 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cartItems, cartSummary, use
                 total={cartSummary.total}
                 itemCount={cartSummary.item_count}
                 onApplyPromoCode={handleApplyPromoCode}
-                appliedPromoCode={appliedPromoCode}
-                promoDiscount={promoDiscount}
+                appliedPromoCode={undefined}
+                promoDiscount={0}
               />
             </div>
           </div>
