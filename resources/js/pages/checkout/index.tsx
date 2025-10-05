@@ -19,7 +19,6 @@ interface CheckoutProps {
   cartSummary: CartSummary;
   shippingOptions: ShippingOption[];
   paymentMethods: PaymentMethod[];
-  paystack_public_key?: string;
 }
 
 const Checkout: React.FC<CheckoutProps> = ({
@@ -28,14 +27,13 @@ const Checkout: React.FC<CheckoutProps> = ({
   cartItems,
   cartSummary,
   shippingOptions,
-  paymentMethods,
-  paystack_public_key
+  paymentMethods
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [promoCode, setPromoCode] = useState('');
   const [formData, setFormData] = useState<CheckoutFormData>({
     shipping: {
-      country: 'NG' // Set default country
+      country: 'NG'
     },
     delivery: {},
     payment: {}
@@ -121,7 +119,6 @@ const Checkout: React.FC<CheckoutProps> = ({
             paymentMethods={paymentMethods}
             cartSummary={cartSummary}
             auth={auth}
-            paystack_public_key={paystack_public_key}
           />
         );
       default:

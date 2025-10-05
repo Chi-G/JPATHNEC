@@ -40,7 +40,6 @@ class CheckoutController extends Controller
             'cartSummary' => $this->getCartSummary($cartItems),
             'shippingOptions' => $this->getShippingOptions(),
             'paymentMethods' => $this->getPaymentMethods(),
-            'paystack_public_key' => env('PAYSTACK_PUBLIC_KEY'),
         ]);
     }
 
