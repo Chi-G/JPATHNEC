@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use App\Models\Order;
+use App\Models\CartItem;
 
 class MyOrdersController extends Controller
 {
@@ -18,68 +20,79 @@ class MyOrdersController extends Controller
             ->with(['items.product'])
             ->orderBy('created_at', 'desc');
 
-        // Search functionality
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('order_number', 'like', "%{$search}%")
-                  ->orWhereHas('items.product', function ($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  });
+            // Search functionality
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('order_number', 'like', "%{$search}%")
+                      ->orWhereHas('items.product', function ($q) use ($search) {
+                          $q->where('name', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            // Status filter
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            $orders = $query->paginate(5)->withQueryString();
+
+            // Transform orders data
+            $orders->getCollection()->transform(function ($order) {
+                return [
+                    'id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'status' => $order->status,
+                    'payment_status' => $order->payment_status,
+                    'total_amount' => $order->total_amount,
+                    'currency' => $order->currency ?? '₦',
+                    'created_at' => $order->created_at->toISOString(),
+                    'shipped_at' => $order->shipped_at?->toISOString(),
+                    'delivered_at' => $order->delivered_at?->toISOString(),
+                    'items_count' => $order->items->count(),
+                    'tracking_number' => $order->tracking_number,
+                    'payment_method' => $order->payment_method,
+                    'shipping_address' => $order->shipping_address ? [
+                        'full_name' => $order->shipping_address['full_name'] ?? $order->shipping_address['name'] ?? '',
+                        'address_line_1' => $order->shipping_address['address_line_1'] ?? $order->shipping_address['address'] ?? '',
+                        'city' => $order->shipping_address['city'] ?? '',
+                        'state' => $order->shipping_address['state'] ?? '',
+                        'postal_code' => $order->shipping_address['postal_code'] ?? $order->shipping_address['zip'] ?? '',
+                        'phone' => $order->shipping_address['phone'] ?? '',
+                    ] : null,
+                    'items' => $order->items->map(function ($item) {
+                        return [
+                            'id' => $item->id,
+                            'product_name' => $item->product_name,
+                            'quantity' => $item->quantity,
+                            'unit_price' => $item->unit_price,
+                            'total_price' => $item->total_price,
+                            'size' => $item->size,
+                            'color' => $item->color,
+                        ];
+                    }),
+                ];
             });
-        }
-
-        // Status filter
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        $orders = $query->paginate(10)->withQueryString();
-
-        // Transform orders data
-        $orders->getCollection()->transform(function ($order) {
-            return [
-                'id' => $order->id,
-                'order_number' => $order->order_number,
-                'status' => $order->status,
-                'payment_status' => $order->payment_status,
-                'total_amount' => $order->total_amount,
-                'currency' => $order->currency ?? '₦',
-                'created_at' => $order->created_at->toISOString(),
-                'shipped_at' => $order->shipped_at?->toISOString(),
-                'delivered_at' => $order->delivered_at?->toISOString(),
-                'items_count' => $order->items->count(),
-                'tracking_number' => $order->tracking_number,
-                'payment_method' => $order->payment_method,
-                'shipping_address' => $order->shipping_address ? [
-                    'full_name' => $order->shipping_address['full_name'] ?? $order->shipping_address['name'] ?? '',
-                    'address_line_1' => $order->shipping_address['address_line_1'] ?? $order->shipping_address['address'] ?? '',
-                    'city' => $order->shipping_address['city'] ?? '',
-                    'state' => $order->shipping_address['state'] ?? '',
-                    'postal_code' => $order->shipping_address['postal_code'] ?? $order->shipping_address['zip'] ?? '',
-                    'phone' => $order->shipping_address['phone'] ?? '',
-                ] : null,
-                'items' => $order->items->map(function ($item) {
-                    return [
-                        'id' => $item->id,
-                        'product_name' => $item->product_name,
-                        'quantity' => $item->quantity,
-                        'unit_price' => $item->unit_price,
-                        'total_price' => $item->total_price,
-                        'size' => $item->size,
-                        'color' => $item->color,
-                    ];
-                }),
-            ];
-        });
-
-        return Inertia::render('my-orders/index', [
-            'orders' => $orders,
-            'filters' => [
-                'search' => $request->search,
-                'status' => $request->status,
-            ],
-        ]);
+            
+            // Get cart count
+            $cartCount = CartItem::where('user_id', $user->id)->sum('quantity');
+            
+            return Inertia::render('my-orders/index', [
+                'auth' => [
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                    ],
+                ],
+                'orders' => $orders,
+                'filters' => [
+                    'search' => $request->search,
+                    'status' => $request->status,
+                ],
+                'cartCount' => $cartCount,
+            ]);
     }
 
     public function show($id)

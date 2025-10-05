@@ -10,11 +10,18 @@ const appName = import.meta.env.VITE_APP_NAME || 'JPATHNEC';
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
-    resolve: (name) =>
-        resolvePageComponent(
-            `./pages/${name}.tsx`,
-            import.meta.glob('./pages/**/*.{tsx,jsx}'),
-        ),
+    resolve: (name) => {
+        try {
+            const component = resolvePageComponent(
+                `./pages/${name}.tsx`,
+                import.meta.glob('./pages/**/*.{tsx,jsx}'),
+            );
+            return component;
+        } catch (error) {
+            console.error('Error resolving component:', name, error);
+            throw error;
+        }
+    },
     setup({ el, App, props }) {
         const root = createRoot(el);
         root.render(

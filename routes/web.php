@@ -39,7 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-orders/{id}', [MyOrdersController::class, 'show'])->name('my-orders.show');
     Route::post('/my-orders/{id}/reorder', [MyOrdersController::class, 'reorder'])->name('my-orders.reorder');
     Route::get('/my-orders/{id}/invoice', [MyOrdersController::class, 'downloadInvoice'])->name('my-orders.invoice');
-});
+}); 
 
 // Wishlist routes
 Route::middleware('auth')->group(function () {
@@ -60,18 +60,6 @@ Route::middleware('auth')->group(function () {
     // Debug/Emergency routes (remove in production)
     Route::post('/payment/clear-cart', [PaymentController::class, 'clearCart'])->name('payment.clear-cart');
     Route::get('/payment/cart-status', [PaymentController::class, 'getCartStatus'])->name('payment.cart-status');
-    
-    // Debug route to check recent orders
-    Route::get('/debug/orders', function() {
-        if (!Auth::check()) return 'Not authenticated';
-        
-        $orders = \App\Models\Order::where('user_id', Auth::id())
-            ->latest()
-            ->take(3)
-            ->get(['id', 'order_number', 'payment_reference', 'payment_status', 'status', 'created_at']);
-            
-        return response()->json($orders);
-    })->name('debug.orders');
 });
 
 // API Routes for cart operations (AJAX)
