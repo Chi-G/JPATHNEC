@@ -3,7 +3,7 @@ import Input from '../../../../components/ui/input';
 import Button from '../../../../components/ui/button';
 import { Checkbox } from '../../../../components/ui/checkbox';
 import PasswordStrengthIndicator from './PasswordStrengthIndicator';
-import Icon from '../../../components/AppIcon';
+import Icon from '../components/AppIcon';
 
 const RegistrationForm = ({ onSubmit, isLoading }) => {
   const [formData, setFormData] = useState({
