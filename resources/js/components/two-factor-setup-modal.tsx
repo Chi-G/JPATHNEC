@@ -95,7 +95,7 @@ function TwoFactorSetupStep({
                         <div className="absolute inset-0 top-1/2 h-px w-full bg-border" />
                         <span className="relative bg-card px-2 py-1">
                             or, enter the code manually
-                        </span>
+                        </span> 
                     </div>
 
                     <div className="flex w-full space-x-2">
@@ -111,10 +111,14 @@ function TwoFactorSetupStep({
                                         readOnly
                                         value={manualSetupKey}
                                         className="h-full w-full bg-background p-3 text-foreground outline-none"
+                                        aria-label="Manual setup key for two-factor authentication"
+                                        title="Manual setup key for two-factor authentication"
                                     />
                                     <button
                                         onClick={() => copy(manualSetupKey)}
                                         className="border-l border-border px-3 hover:bg-muted"
+                                        aria-label="Copy manual setup key"
+                                        title="Copy manual setup key"
                                     >
                                         <IconComponent className="w-4" />
                                     </button>
@@ -171,6 +175,7 @@ function TwoFactorVerificationStep({
                                 onChange={setCode}
                                 disabled={processing}
                                 pattern={REGEXP_ONLY_DIGITS}
+                                aria-label="Enter 6-digit verification code from your authenticator app"
                             >
                                 <InputOTPGroup>
                                     {Array.from(
