@@ -258,7 +258,7 @@
                 <h3>📋 Order Summary</h3>
                 <div class="order-detail">
                     <span><strong>Order Number:</strong></span>
-                    <span class="reference-number">{{ $order->order_number }}</span>  
+                    <span class="reference-number">{{ $order->order_number }}</span>
                 </div>
                 <div class="order-detail">
                     <span><strong>Order Date:</strong></span>
