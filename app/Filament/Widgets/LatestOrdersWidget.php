@@ -13,7 +13,9 @@ class LatestOrdersWidget extends TableWidget
 {
     protected static ?string $heading = 'Latest Orders';
     
-    protected int | string | array $columnSpan = 'full';
+    protected static ?int $sort = 2;
+    
+    protected int | string | array $columnSpan = 'full'; 
 
     public function table(Table $table): Table
     {
@@ -24,17 +26,17 @@ class LatestOrdersWidget extends TableWidget
                     ->label('Order #')
                     ->searchable()
                     ->sortable(),
-                    
+
                 TextColumn::make('user.name')
                     ->label('Customer')
                     ->searchable()
                     ->sortable(),
-                    
+
                 TextColumn::make('total_amount')
                     ->label('Total')
                     ->money('NGN')
                     ->sortable(),
-                    
+
                 BadgeColumn::make('status')
                     ->label('Status')
                     ->colors([
@@ -44,7 +46,7 @@ class LatestOrdersWidget extends TableWidget
                         'success' => 'delivered',
                         'info' => 'shipped',
                     ]),
-                    
+
                 BadgeColumn::make('payment_status')
                     ->label('Payment')
                     ->colors([
@@ -53,7 +55,7 @@ class LatestOrdersWidget extends TableWidget
                         'success' => 'paid',
                         'secondary' => 'refunded',
                     ]),
-                    
+
                 TextColumn::make('created_at')
                     ->label('Created')
                     ->dateTime()

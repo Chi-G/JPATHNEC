@@ -29,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName('JPATHNEC Admin')
-            ->favicon(asset('favicon.ico'))
+            ->favicon(asset('favicon.png'))
             ->darkMode(false)
             ->colors([
                 'primary' => Color::Green,
