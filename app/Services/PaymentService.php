@@ -33,7 +33,7 @@ class PaymentService
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
-                    'amount' => $data['amount'] * 100, // Paystack amount is in kobo
+                    'amount' => (int) $data['amount'],
                     'email' => $data['email'],
                     'reference' => $data['reference'],
                     'currency' => 'NGN',
@@ -68,7 +68,7 @@ class PaymentService
 
         } catch (RequestException $e) {
             Log::error('Paystack payment initialization failed: ' . $e->getMessage());
-            
+
             return [
                 'status' => false,
                 'message' => 'Payment initialization failed. Please try again.'
@@ -106,7 +106,7 @@ class PaymentService
 
         } catch (RequestException $e) {
             Log::error('Paystack payment verification failed: ' . $e->getMessage());
-            
+
             return [
                 'status' => false,
                 'message' => 'Payment verification failed. Please contact support.'
