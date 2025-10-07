@@ -46,7 +46,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 'User Management',
-                'Catalog Management', 
+                'Catalog Management',
                 'Order Management',
                 'Shopping Experience',
             ])
