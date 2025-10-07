@@ -82,5 +82,8 @@ Route::patch('/api/cart/{id}', [CartController::class, 'update'])->name('api.car
 Route::delete('/api/cart/{id}', [CartController::class, 'remove'])->name('api.cart.remove')->middleware(['auth', 'verified']);
 Route::delete('/api/cart', [CartController::class, 'clear'])->name('api.cart.clear')->middleware(['auth', 'verified']);
 
+// Queue processing route for shared hosting
+Route::post('/api/process-queue', [App\Http\Controllers\QueueController::class, 'processJobs'])->name('queue.process');
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

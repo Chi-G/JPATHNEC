@@ -203,7 +203,7 @@ class PaymentController extends Controller
 
                         // Create order items from cart
                         foreach ($cartItems as $cartItem) {
-                            \App\Models\OrderItem::create([
+                            OrderItem::create([
                                 'order_id' => $order->id,
                                 'product_id' => $cartItem->product_id,
                                 'product_name' => $cartItem->product->name ?? 'Unknown Product',
@@ -233,7 +233,7 @@ class PaymentController extends Controller
                 } catch (\Exception $e) {
                     Log::error('Failed to create recovery order', [
                         'reference' => $reference,
-                        'error' => $e->getMessage(),
+                        'error' => $e->getMessage(), 
                         'user_id' => Auth::id()
                     ]);
                 }
