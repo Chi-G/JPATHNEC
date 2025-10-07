@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
-import { ChevronRight, Download, Eye, Package, Search, RefreshCw, Calendar, CreditCard, MapPin, RotateCcw } from 'lucide-react';
+import { ChevronRight, Download, Eye, Package, Search, RefreshCw, Calendar, CreditCard, MapPin, RotateCcw, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import Button from '../../components/ui/button';
 import Input from '../../components/ui/input';
 import Header from '../../components/ui/header';
@@ -29,6 +29,9 @@ interface Order {
     items?: OrderItem[];
     tracking_number?: string;
     payment_method?: string;
+    estimated_delivery?: string;
+    delivery_status_message?: string;
+    is_delivery_overdue?: boolean;
     shipping_address?: {
         full_name: string;
         address_line_1: string;
@@ -66,28 +69,28 @@ interface MyOrdersProps {
 }
 
 const statusConfig = {
-    pending: { 
-        label: 'Pending', 
+    pending: {
+        label: 'Pending',
         color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
         icon: '⏳'
     },
-    processing: { 
-        label: 'Processing', 
+    processing: {
+        label: 'Processing',
         color: 'bg-blue-100 text-blue-800 border-blue-200',
         icon: '⚙️'
     },
-    shipped: { 
-        label: 'Shipped', 
+    shipped: {
+        label: 'Shipped',
         color: 'bg-purple-100 text-purple-800 border-purple-200',
         icon: '🚚'
     },
-    delivered: { 
-        label: 'Delivered', 
+    delivered: {
+        label: 'Delivered',
         color: 'bg-green-100 text-green-800 border-green-200',
         icon: '✅'
     },
-    cancelled: { 
-        label: 'Cancelled', 
+    cancelled: {
+        label: 'Cancelled',
         color: 'bg-red-100 text-red-800 border-red-200',
         icon: '❌'
     }
@@ -128,7 +131,7 @@ export default function MyOrders({ auth, orders, filters, cartCount = 0 }: MyOrd
         const params = new URLSearchParams();
         if (searchQuery) params.append('search', searchQuery);
         if (statusFilter) params.append('status', statusFilter);
-        
+
         window.location.href = `/my-orders?${params.toString()}`;
     };
 
@@ -141,7 +144,7 @@ export default function MyOrders({ auth, orders, filters, cartCount = 0 }: MyOrd
             <>
                 <Head title="My Orders - JPATHNEC" />
                 <Header user={auth.user} cartCount={cartCount} />
-                
+
                 <main className="flex-1">
                     <div className="container mx-auto px-8 md:px-12 lg:px-16 py-8">
                         {/* Header */}
@@ -151,7 +154,7 @@ export default function MyOrders({ auth, orders, filters, cartCount = 0 }: MyOrd
                                 <ChevronRight className="h-4 w-4 mx-2" />
                                 <span className="text-foreground">My Orders</span>
                             </div>
-                            
+
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                                 <div>
                                     <h1 className="text-3xl font-bold text-foreground">My Orders</h1>
@@ -159,7 +162,7 @@ export default function MyOrders({ auth, orders, filters, cartCount = 0 }: MyOrd
                                         Track and manage your orders
                                     </p>
                                 </div>
-                                
+
                                 <div className="mt-4 sm:mt-0">
                                     <span className="text-sm text-muted-foreground">
                                         Total Orders: <span className="font-semibold">{orders?.total || 0}</span>
@@ -187,7 +190,7 @@ export default function MyOrders({ auth, orders, filters, cartCount = 0 }: MyOrd
                                     />
                                 </div>
                             </div>
-                            
+
                             <div>
                                 <label className="block text-sm font-medium text-foreground mb-2">
                                     Filter by Status
@@ -206,7 +209,7 @@ export default function MyOrders({ auth, orders, filters, cartCount = 0 }: MyOrd
                                     <option value="cancelled">Cancelled</option>
                                 </select>
                             </div>
-                            
+
                             <div className="flex items-end">
                                 <Button onClick={handleSearch} className="w-full">
                                     <Search className="h-4 w-4 mr-2" />
@@ -222,7 +225,7 @@ export default function MyOrders({ auth, orders, filters, cartCount = 0 }: MyOrd
                             <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                             <h3 className="text-lg font-medium text-foreground mb-2">No orders found</h3>
                             <p className="text-muted-foreground mb-6">
-                                {filters.search || filters.status 
+                                {filters.search || filters.status
                                     ? "Try adjusting your search or filter criteria."
                                     : "You haven't placed any orders yet."
                                 }
@@ -248,7 +251,7 @@ export default function MyOrders({ auth, orders, filters, cartCount = 0 }: MyOrd
                                                         <span className="ml-1">{statusConfig[order.status as keyof typeof statusConfig]?.label}</span>
                                                     </span>
                                                 </div>
-                                                
+
                                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                                     <div className="flex items-center text-muted-foreground">
                                                         <Calendar className="h-4 w-4 mr-2" />
@@ -271,8 +274,30 @@ export default function MyOrders({ auth, orders, filters, cartCount = 0 }: MyOrd
                                                         </div>
                                                     )}
                                                 </div>
+
+                                                {/* Delivery Information */}
+                                                {order.delivery_status_message && (
+                                                    <div className={`mt-3 p-3 rounded-lg text-sm ${
+                                                        order.is_delivery_overdue
+                                                            ? 'bg-red-50 text-red-700 border border-red-200'
+                                                            : order.status === 'delivered'
+                                                                ? 'bg-green-50 text-green-700 border border-green-200'
+                                                                : 'bg-blue-50 text-blue-700 border border-blue-200'
+                                                    }`}>
+                                                        <div className="flex items-center">
+                                                            {order.status === 'delivered' ? (
+                                                                <CheckCircle className="h-4 w-4 mr-2" />
+                                                            ) : order.is_delivery_overdue ? (
+                                                                <AlertCircle className="h-4 w-4 mr-2" />
+                                                            ) : (
+                                                                <Clock className="h-4 w-4 mr-2" />
+                                                            )}
+                                                            <span className="font-medium">{order.delivery_status_message}</span>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
-                                            
+
                                             <div className="mt-4 lg:mt-0 lg:ml-6 flex flex-col lg:items-end">
                                                 <div className="text-2xl font-bold text-foreground mb-2">
                                                     {formatPrice(order.total_amount, order.currency)}
@@ -395,7 +420,7 @@ export default function MyOrders({ auth, orders, filters, cartCount = 0 }: MyOrd
             <>
                 <Head title="My Orders - JPATHNEC" />
                 <Header user={auth.user} cartCount={cartCount} />
-                
+
                 <main className="flex-1">
                     <div className="container mx-auto px-8 md:px-12 lg:px-16 py-8">
                         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">

@@ -168,22 +168,52 @@ class Order extends Model
     }
 
     /**
-     * Update order status.
+     * Update order status with additional data.
      */
-    public function updateStatus(string $status, ?string $description = null, ?string $notes = null, ?string $location = null, ?string $updatedBy = null): void
+    public function updateStatus(string $status, array $data = []): void
     {
-        $this->update([
+        $previousStatus = $this->status;
+        
+        $updateData = [
             'status' => $status,
             'status_updated_at' => now(),
-            'current_location' => $location,
-            'status_description' => $description ?? $this->getDefaultStatusDescription($status),
-        ]);
+        ];
+
+        // Merge additional data
+        if (isset($data['current_location'])) {
+            $updateData['current_location'] = $data['current_location'];
+        }
+        
+        if (isset($data['status_description'])) {
+            $updateData['status_description'] = $data['status_description'];
+        } else {
+            $updateData['status_description'] = $this->getDefaultStatusDescription($status);
+        }
+        
+        if (isset($data['tracking_number'])) {
+            $updateData['tracking_number'] = $data['tracking_number'];
+        }
+        
+        if (isset($data['shipped_at'])) {
+            $updateData['shipped_at'] = $data['shipped_at'];
+        }
+        
+        if (isset($data['delivered_at'])) {
+            $updateData['delivered_at'] = $data['delivered_at'];
+        }
+
+        $this->update($updateData);
 
         // Update specific timestamp fields based on status
-        if ($status === 'shipped' && !$this->shipped_at) {
+        if ($status === 'shipped' && !$this->shipped_at && !isset($data['shipped_at'])) {
             $this->update(['shipped_at' => now()]);
-        } elseif ($status === 'delivered' && !$this->delivered_at) {
+        } elseif ($status === 'delivered' && !$this->delivered_at && !isset($data['delivered_at'])) {
             $this->update(['delivered_at' => now()]);
+        }
+
+        // Send notification to customer if status changed
+        if ($previousStatus !== $status && $this->user) {
+            $this->user->notify(new \App\Notifications\OrderStatusUpdated($this, $previousStatus));
         }
     }
 
@@ -245,6 +275,92 @@ class Order extends Model
             'cancelled', 'refunded' => 0,
             default => 25,
         };
+    }
+
+    /**
+     * Get estimated delivery date based on shipping method and location.
+     */
+    public function getEstimatedDeliveryDate(): ?\Carbon\Carbon
+    {
+        if ($this->delivered_at) {
+            return $this->delivered_at;
+        }
+
+        $baseDate = $this->shipped_at ?? $this->created_at;
+        
+        // Default delivery estimates based on shipping method and location
+        $deliveryDays = match($this->shipping_method ?? 'standard') {
+            'express' => 1,
+            'next_day' => 1,
+            'standard' => 3,
+            'economy' => 7,
+            default => 3,
+        };
+
+        // Adjust based on location (if we have shipping address data)
+        if ($this->shipping_address) {
+            $address = $this->shipping_address; // Already cast as array
+            $state = $address['state'] ?? '';
+            
+            // Add extra days for remote locations
+            $remoteTerritories = ['Borno', 'Yobe', 'Adamawa', 'Taraba', 'Bayelsa', 'Cross River'];
+            if (in_array($state, $remoteTerritories)) {
+                $deliveryDays += 2;
+            }
+        }
+
+        return $baseDate->addDays($deliveryDays);
+    }
+
+    /**
+     * Get estimated delivery date as formatted string.
+     */
+    public function getEstimatedDeliveryAttribute(): ?string
+    {
+        $date = $this->getEstimatedDeliveryDate();
+        return $date ? $date->format('M d, Y') : null;
+    }
+
+    /**
+     * Check if delivery is overdue.
+     */
+    public function isDeliveryOverdue(): bool
+    {
+        if ($this->status === 'delivered' || !in_array($this->status, ['shipped', 'processing'])) {
+            return false;
+        }
+
+        $estimatedDate = $this->getEstimatedDeliveryDate();
+        return $estimatedDate && now()->isAfter($estimatedDate);
+    }
+
+    /**
+     * Get delivery status message.
+     */
+    public function getDeliveryStatusMessage(): string
+    {
+        if ($this->status === 'delivered') {
+            return 'Delivered on ' . $this->delivered_at->format('M d, Y');
+        }
+
+        if ($this->status === 'cancelled') {
+            return 'Order cancelled';
+        }
+
+        $estimatedDate = $this->getEstimatedDeliveryDate();
+        if (!$estimatedDate) {
+            return 'Delivery date will be updated soon';
+        }
+
+        if ($this->isDeliveryOverdue()) {
+            return 'Delivery overdue - Expected by ' . $estimatedDate->format('M d, Y');
+        }
+
+        if ($this->status === 'shipped') {
+            return 'Expected delivery: ' . $estimatedDate->format('M d, Y');
+        }
+
+        return 'Estimated delivery: ' . $estimatedDate->format('M d, Y');
     }
 
     /**
