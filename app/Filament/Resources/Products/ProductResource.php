@@ -24,6 +24,8 @@ class ProductResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'Catalog Management';
+
     protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationLabel = 'Products';

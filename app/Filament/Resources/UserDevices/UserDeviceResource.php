@@ -24,6 +24,8 @@ class UserDeviceResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'device_name';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'User Management';
+
     protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationLabel = 'User Devices';

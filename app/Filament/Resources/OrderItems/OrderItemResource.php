@@ -24,6 +24,10 @@ class OrderItemResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'orderitem';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'Order Management';
+
+    protected static ?int $navigationSort = 2;
+
     public static function form(Schema $schema): Schema
     {
         return OrderItemForm::configure($schema);

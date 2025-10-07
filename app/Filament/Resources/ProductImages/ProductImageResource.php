@@ -24,6 +24,10 @@ class ProductImageResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'productimage';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'Catalog Management';
+
+    protected static ?int $navigationSort = 3;
+
     public static function form(Schema $schema): Schema
     {
         return ProductImageForm::configure($schema);

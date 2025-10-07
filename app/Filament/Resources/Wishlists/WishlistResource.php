@@ -24,6 +24,10 @@ class WishlistResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'wishlist';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'Shopping Experience';
+
+    protected static ?int $navigationSort = 2;
+
     public static function form(Schema $schema): Schema
     {
         return WishlistForm::configure($schema);

@@ -24,6 +24,10 @@ class CartItemResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'cartitem';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'Shopping Experience';
+
+    protected static ?int $navigationSort = 1;
+
     public static function form(Schema $schema): Schema
     {
         return CartItemForm::configure($schema);
