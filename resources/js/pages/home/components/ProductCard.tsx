@@ -5,6 +5,7 @@ import Image from '../../../components/AppImage';
 import Button from '../../../components/ui/button';
 import Icon from '../../../components/AppIcon';
 import { Product } from '../../../types';
+import formatPrice from '../../../lib/formatPrice';
 
 interface ProductCardProps {
   product: Product;
@@ -157,11 +158,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-lg font-semibold text-foreground">
-              ${product.price?.toFixed(2) ?? '0.00'}
+              {formatPrice(product.price)}
             </span>
             {product.originalPrice && product.originalPrice > (product.price ?? 0) && (
               <span className="text-sm text-muted-foreground line-through">
-                ${product.originalPrice.toFixed(2)}
+                {formatPrice(product.originalPrice)}
               </span>
             )}
           </div>

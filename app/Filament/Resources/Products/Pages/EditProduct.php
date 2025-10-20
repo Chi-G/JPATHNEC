@@ -18,4 +18,10 @@ class EditProduct extends EditRecord
             DeleteAction::make(),
         ];
     }
+
+    protected function getRedirectUrl(): ?string
+    {
+        // After saving edits, redirect back to the product index listing
+        return $this->getResourceUrl();
+    }
 }

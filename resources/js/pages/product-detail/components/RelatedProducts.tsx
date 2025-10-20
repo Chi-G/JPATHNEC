@@ -3,6 +3,7 @@ import { Link } from '@inertiajs/react';
 import Image from '../../../components/AppImage';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/button';
+import formatPrice from '../../../lib/formatPrice';
 
 interface Product {
   id: number;
@@ -23,40 +24,8 @@ interface RelatedProductsProps {
 const RelatedProducts = ({ products, onAddToWishlist }: RelatedProductsProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const scroll = (direction: 'left' | 'right') => {
-    const container = scrollRef.current;
-    if (container) {
-      const scrollAmount = 320; // Width of one card plus gap
-      container.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      });
-    }
-  };
-
   return (
     <div className="bg-card rounded-lg p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-foreground">You Might Also Like</h2>
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => scroll('left')}
-            className="w-10 h-10"
-          >
-            <Icon name="ChevronLeft" size={16} />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => scroll('right')}
-            className="w-10 h-10"
-          >
-            <Icon name="ChevronRight" size={16} />
-          </Button>
-        </div>
-      </div>
       <div
         ref={scrollRef}
         className="flex space-x-4 overflow-x-auto scrollbar-hide pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
@@ -113,10 +82,10 @@ const RelatedProducts = ({ products, onAddToWishlist }: RelatedProductsProps) =>
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <span className="text-lg font-bold text-primary">${product?.price}</span>
+                  <span className="text-lg font-bold text-primary">{formatPrice(product?.price)}</span>
                   {product?.originalPrice && (
                     <span className="text-sm text-muted-foreground line-through">
-                      ${product?.originalPrice}
+                      {formatPrice(product?.originalPrice)}
                     </span>
                   )}
                 </div>

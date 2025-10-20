@@ -85,5 +85,15 @@ Route::delete('/api/cart', [CartController::class, 'clear'])->name('api.cart.cle
 // Queue processing route for shared hosting
 Route::post('/api/process-queue', [App\Http\Controllers\QueueController::class, 'processJobs'])->name('queue.process');
 
+// Email preview routes (development only - remove in production)
+if (config('app.env') !== 'production') {
+    Route::get('/email-preview', function() {
+        return view('email-preview-dashboard');
+    })->name('email-preview.dashboard');
+    Route::get('/email-preview/welcome', [App\Http\Controllers\EmailPreviewController::class, 'showWelcome'])->name('email-preview.welcome');
+    Route::get('/email-preview/order-confirmation', [App\Http\Controllers\EmailPreviewController::class, 'showOrderConfirmation'])->name('email-preview.order-confirmation');
+    Route::get('/email-preview/invoice', [App\Http\Controllers\EmailPreviewController::class, 'showInvoice'])->name('email-preview.invoice');
+}
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

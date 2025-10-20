@@ -6,8 +6,6 @@ import Icon from '../../components/AppIcon';
 import ImageCarousel from './components/ImageCarousel';
 import ProductInfo from './components/ProductInfo';
 import ProductDetails from './components/ProductDetails';
-import RelatedProducts from './components/RelatedProducts';
-import CustomerReviews from './components/CustomerReviews';
 
 interface Product {
   id: number;
@@ -137,8 +135,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   };
 
   const [product] = useState(adaptProduct(initialProduct || null));
-  const [relatedProducts] = useState<RelatedProduct[]>(related_products);
-  const [reviews] = useState<Review[]>(initialReviews);
   const [wishlist, setWishlist] = useState<Set<string>>(new Set());
   const [loading] = useState(false);
 
@@ -174,7 +170,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     try {
       // Get CSRF token from meta tag
       const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-      
+
       const response = await fetch('/api/cart/add', {
         method: 'POST',
         headers: {
@@ -195,7 +191,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       if (response.ok) {
         // Success
         toast.success(data.message || 'Item added to cart successfully!');
-        
+
         // Optional: Update cart count in header if you have state management
         if (process.env.NODE_ENV === 'development') {
           console.log('Added to cart successfully:', cartItem);
@@ -224,7 +220,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     try {
       // Get CSRF token from meta tag
       const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-      
+
       const response = await fetch('/wishlist/toggle', {
         method: 'POST',
         headers: {
@@ -257,10 +253,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       console.error('Error toggling wishlist:', error);
       toast.error('An error occurred while updating wishlist');
     }
-  };
-
-  const handleAddToWishlist = (id: number) => {
-    setWishlist(prev => new Set([...prev, id.toString()]));
   };
 
   if (loading) {
@@ -330,24 +322,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         </div>
 
         {/* Product Details */}
-        <div className="mb-12">
+        <div className="mb-3">
           <ProductDetails product={product} />
         </div>
 
         {/* Customer Reviews */}
-        <div className="mb-12">
-          <CustomerReviews
-            reviews={reviews}
-            averageRating={product?.rating}
-            totalReviews={product?.review_count}
-          />
-        </div>
 
         {/* Related Products */}
-        <RelatedProducts
-          products={relatedProducts}
-          onAddToWishlist={handleAddToWishlist}
-        />
       </main>
       {/* Footer */}
       <footer className="bg-card border-t border-border mt-16">

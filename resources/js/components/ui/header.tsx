@@ -33,31 +33,31 @@ const Header: React.FC<HeaderProps> = ({ user = null, cartCount = 0 }) => {
   const categories = {
     mens: {
       label: "Men's",
-      path: '/product-list?category=mens',
+      path: '/product-list/mens',
       subcategories: [
-        { label: 'T-Shirts', path: '/product-list?category=mens&type=tshirts', icon: 'Shirt' },
-        { label: 'Polos', path: '/product-list?category=mens&type=polos', icon: 'Shirt' },
-        { label: 'Corporate Shirts', path: '/product-list?category=mens&type=corporate', icon: 'Briefcase' },
-        { label: 'Trousers', path: '/product-list?category=mens&type=trousers', icon: 'Shirt' },
-        { label: 'Pants', path: '/product-list?category=mens&type=pants', icon: 'Shirt' },
-        { label: 'Shoes', path: '/product-list?category=mens&type=shoes', icon: 'Footprints' },
-        { label: 'Sneakers', path: '/product-list?category=mens&type=sneakers', icon: 'Footprints' },
-        { label: 'Sandals', path: '/product-list?category=mens&type=sandals', icon: 'Footprints' },
+        { label: 'T-Shirts', path: '/product-list/mens?t=tshirts', icon: 'Shirt' },
+        { label: 'Polos', path: '/product-list/mens?t=polos', icon: 'Shirt' },
+        { label: 'Corporate Shirts', path: '/product-list/mens?t=corporate', icon: 'Briefcase' },
+        { label: 'Trousers', path: '/product-list/mens?t=trousers', icon: 'Shirt' },
+        { label: 'Pants', path: '/product-list/mens?t=pants', icon: 'Shirt' },
+        { label: 'Shoes', path: '/product-list/mens?t=shoes', icon: 'Footprints' },
+        { label: 'Sneakers', path: '/product-list/mens?t=sneakers', icon: 'Footprints' },
+        { label: 'Sandals', path: '/product-list/mens?t=sandals', icon: 'Footprints' },
       ]
     },
-    womens: {
+    women: {
       label: "Women's",
-      path: '/product-list?category=womens',
+      path: '/product-list/women',
       subcategories: [
-        { label: 'T-Shirts', path: '/product-list?category=womens&type=tshirts', icon: 'Shirt' },
-        { label: 'Polos', path: '/product-list?category=womens&type=polos', icon: 'Shirt' },
-        { label: 'Corporate Shirts', path: '/product-list?category=womens&type=corporate', icon: 'Briefcase' },
-        { label: 'Trousers', path: '/product-list?category=womens&type=trousers', icon: 'Shirt' },
-        { label: 'Pants', path: '/product-list?category=womens&type=pants', icon: 'Shirt' },
-        { label: 'Shoes', path: '/product-list?category=womens&type=shoes', icon: 'Footprints' },
-        { label: 'Sneakers', path: '/product-list?category=womens&type=sneakers', icon: 'Footprints' },
-        { label: 'Sandals', path: '/product-list?category=womens&type=sandals', icon: 'Footprints' },
-        { label: 'Slippers', path: '/product-list?category=womens&type=slippers', icon: 'Footprints' },
+        { label: 'T-Shirts', path: '/product-list/women?t=tshirts', icon: 'Shirt' },
+        { label: 'Polos', path: '/product-list/women?t=polos', icon: 'Shirt' },
+        { label: 'Corporate Shirts', path: '/product-list/women?t=corporate', icon: 'Briefcase' },
+        { label: 'Trousers', path: '/product-list/women?t=trousers', icon: 'Shirt' },
+        { label: 'Pants', path: '/product-list/women?t=pants', icon: 'Shirt' },
+        { label: 'Shoes', path: '/product-list/women?t=shoes', icon: 'Footprints' },
+        { label: 'Sneakers', path: '/product-list/women?t=sneakers', icon: 'Footprints' },
+        { label: 'Sandals', path: '/product-list/women?t=sandals', icon: 'Footprints' },
+        { label: 'Slippers', path: '/product-list/women?t=slippers', icon: 'Footprints' },
       ]
     }
   };

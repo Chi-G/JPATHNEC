@@ -48,7 +48,8 @@ const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({ categories }) => {
                   <Image
                     src={category.image}
                     alt={category.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    // keep cover but prefer top of image so heads aren't cropped
+                    className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
                   <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8">

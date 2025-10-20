@@ -155,7 +155,7 @@ class Order extends Model
      */
     public function getFormattedTotalAttribute(): string
     {
-        $currency = $this->currency ?? '$';
+        $currency = $this->currency ?? '₦';
         return $currency . number_format((float) $this->total_amount, 2);
     }
 
@@ -173,7 +173,7 @@ class Order extends Model
     public function updateStatus(string $status, array $data = []): void
     {
         $previousStatus = $this->status;
-        
+
         $updateData = [
             'status' => $status,
             'status_updated_at' => now(),
@@ -183,21 +183,21 @@ class Order extends Model
         if (isset($data['current_location'])) {
             $updateData['current_location'] = $data['current_location'];
         }
-        
+
         if (isset($data['status_description'])) {
             $updateData['status_description'] = $data['status_description'];
         } else {
             $updateData['status_description'] = $this->getDefaultStatusDescription($status);
         }
-        
+
         if (isset($data['tracking_number'])) {
             $updateData['tracking_number'] = $data['tracking_number'];
         }
-        
+
         if (isset($data['shipped_at'])) {
             $updateData['shipped_at'] = $data['shipped_at'];
         }
-        
+
         if (isset($data['delivered_at'])) {
             $updateData['delivered_at'] = $data['delivered_at'];
         }
@@ -287,7 +287,7 @@ class Order extends Model
         }
 
         $baseDate = $this->shipped_at ?? $this->created_at;
-        
+
         // Default delivery estimates based on shipping method and location
         $deliveryDays = match($this->shipping_method ?? 'standard') {
             'express' => 1,
@@ -301,7 +301,7 @@ class Order extends Model
         if ($this->shipping_address) {
             $address = $this->shipping_address; // Already cast as array
             $state = $address['state'] ?? '';
-            
+
             // Add extra days for remote locations
             $remoteTerritories = ['Borno', 'Yobe', 'Adamawa', 'Taraba', 'Bayelsa', 'Cross River'];
             if (in_array($state, $remoteTerritories)) {

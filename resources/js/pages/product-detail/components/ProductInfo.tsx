@@ -3,6 +3,7 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/button';
 import { WhatsAppProductContact } from '../../../components/ui/whatsapp-contact';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
+import formatPrice from '../../../lib/formatPrice';
 
 interface Color {
   name: string;
@@ -90,10 +91,10 @@ const ProductInfo = ({ product, onAddToCart, onToggleWishlist, isInWishlist }: P
       <div>
         <h1 className="text-3xl font-bold text-foreground mb-2">{product?.name}</h1>
         <div className="flex items-center space-x-4 mb-4">
-          <span className="text-2xl font-bold text-primary">${product?.price}</span>
+          <span className="text-2xl font-bold text-primary">{formatPrice(product?.price)}</span>
           {product?.originalPrice && (
             <span className="text-lg text-muted-foreground line-through">
-              ${product?.originalPrice}
+              {formatPrice(product?.originalPrice)}
             </span>
           )}
           {product?.discount && (
@@ -245,7 +246,7 @@ const ProductInfo = ({ product, onAddToCart, onToggleWishlist, isInWishlist }: P
             {isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
           </Button>
         </div>
-        
+
         {/* WhatsApp Contact */}
         <div className="flex justify-center">
           <WhatsAppProductContact

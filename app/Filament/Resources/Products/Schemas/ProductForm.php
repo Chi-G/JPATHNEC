@@ -17,7 +17,8 @@ class ProductForm
                 TextInput::make('name')
                     ->required(),
                 TextInput::make('slug')
-                    ->required(),
+                    ->required()
+                    ->default(fn ($record) => $record?->slug ?? null),
                 Textarea::make('description')
                     ->required()
                     ->columnSpanFull(),
@@ -29,7 +30,7 @@ class ProductForm
                 TextInput::make('price')
                     ->required()
                     ->numeric()
-                    ->prefix('$'),
+                    ->prefix('₦'),
                 TextInput::make('compare_price')
                     ->numeric(),
                 TextInput::make('cost_price')
@@ -45,10 +46,13 @@ class ProductForm
                 Toggle::make('is_featured')
                     ->required(),
                 Toggle::make('is_new')
+                    ->label('New Arrival')
                     ->required(),
                 Toggle::make('is_bestseller')
+                    ->label('Best Seller')
                     ->required(),
                 Toggle::make('is_trending')
+                    ->label('Trending')
                     ->required(),
                 TextInput::make('brand'),
                 TextInput::make('material'),

@@ -300,7 +300,7 @@
                         <td>{{ $item->quantity }}</td>
                         <td><strong>{{ $order->currency }}{{ number_format($item->total_price, 2) }}</strong></td>
                     </tr>
-                    @endforeach
+                    @endforeach 
                 </tbody>
             </table>
 

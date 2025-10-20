@@ -11,7 +11,7 @@ const TrustSignals = () => {
     {
       icon: "Truck",
       title: "Free Shipping",
-      description: "Free delivery on orders over $75"
+      description: "Free delivery on orders over ₦20,000"
     },
     {
       icon: "RotateCcw",
@@ -28,26 +28,26 @@ const TrustSignals = () => {
   const testimonials = [
     {
       id: 1,
-      name: "Sarah Johnson",
+      name: "Chijindu Nwokeohuru",
       rating: 5,
       comment: "Amazing quality and fast shipping! The corporate shirts fit perfectly and look professional.",
-      avatar: "https://randomuser.me/api/portraits/women/32.jpg",
+      avatar: '/images/customer1.png',
       verified: true
     },
     {
       id: 2,
-      name: "Michael Chen",
+      name: "Chukwuemeka Odum",
       rating: 5,
       comment: "Great selection of men's footwear. The sneakers are comfortable and stylish.",
-      avatar: "https://randomuser.me/api/portraits/men/45.jpg",
+      avatar: '/images/customer2.png',
       verified: true
     },
     {
       id: 3,
-      name: "Emily Rodriguez",
+      name: "Ikpeoha Chineleobi",
       rating: 5,
       comment: "Love the women's collection! Excellent customer service and quick delivery.",
-      avatar: "https://randomuser.me/api/portraits/women/28.jpg",
+      avatar: '/images/customer3.png',
       verified: true
     }
   ];
@@ -74,7 +74,7 @@ const TrustSignals = () => {
     return Array.from({ length: 5 }, (_, index) => (
       <Icon
         key={index}
-        name="Star" 
+        name="Star"
         size={14}
         className={`${
           index < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'

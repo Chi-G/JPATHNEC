@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
+import formatPrice from '../../../lib/formatPrice';
+import type { Product, ShippingOption } from '../../../types';
 
-const ProductDetails = ({ product }) => {
+interface ProductDetailsProps {
+  product: Product & {
+    shippingOptions?: ShippingOption[];
+    returnShippingFee?: number | null;
+    // allow snake_case fallbacks that sometimes come from the backend
+    return_shipping_fee?: number | null;
+  };
+}
+
+const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
   const [activeTab, setActiveTab] = useState('details');
 
   const tabs = [
     { id: 'details', label: 'Product Details', icon: 'Info' },
     { id: 'sizing', label: 'Size Guide', icon: 'Ruler' },
-    { id: 'care', label: 'Care Instructions', icon: 'Heart' },
     { id: 'shipping', label: 'Shipping & Returns', icon: 'Truck' }
   ];
 
@@ -75,33 +85,34 @@ const ProductDetails = ({ product }) => {
             ))}
           </div>
         );
-      case 'shipping':
+      case 'shipping': {
+        // sensible defaults if backend doesn't provide shipping data
+        const defaultShippingOptions: ShippingOption[] = [
+          { id: 'standard', name: 'Standard Shipping', price: 5.99, duration: '5-7 business days' },
+          { id: 'express', name: 'Express Shipping', price: 12.99, duration: '2-3 business days' },
+          { id: 'next_day', name: 'Next Day Delivery', price: 24.99, duration: '1 business day' }
+        ];
+
+        const shippingOptions: ShippingOption[] = (product?.shippingOptions && product.shippingOptions.length)
+          ? product.shippingOptions
+          : defaultShippingOptions;
+
+        const returnFee = (product?.returnShippingFee ?? product?.return_shipping_fee) ?? 4.99;
+
         return (
           <div className="space-y-6">
             <div>
               <h4 className="font-medium text-foreground mb-3">Shipping Options</h4>
               <div className="space-y-3">
-                <div className="flex justify-between items-center p-3 border border-border rounded-lg">
-                  <div>
-                    <p className="font-medium">Standard Shipping</p>
-                    <p className="text-sm text-muted-foreground">5-7 business days</p>
+                {shippingOptions.map((option) => (
+                  <div key={option.id} className="flex justify-between items-center p-3 border border-border rounded-lg">
+                    <div>
+                      <p className="font-medium">{option.name}</p>
+                      <p className="text-sm text-muted-foreground">{option.duration}</p>
+                    </div>
+                    <span className="font-medium">{formatPrice(option.price)}</span>
                   </div>
-                  <span className="font-medium">$5.99</span>
-                </div>
-                <div className="flex justify-between items-center p-3 border border-border rounded-lg">
-                  <div>
-                    <p className="font-medium">Express Shipping</p>
-                    <p className="text-sm text-muted-foreground">2-3 business days</p>
-                  </div>
-                  <span className="font-medium">$12.99</span>
-                </div>
-                <div className="flex justify-between items-center p-3 border border-border rounded-lg">
-                  <div>
-                    <p className="font-medium">Next Day Delivery</p>
-                    <p className="text-sm text-muted-foreground">1 business day</p>
-                  </div>
-                  <span className="font-medium">$24.99</span>
-                </div>
+                ))}
               </div>
             </div>
             <div>
@@ -110,11 +121,12 @@ const ProductDetails = ({ product }) => {
                 <p>• 30-day return window from delivery date</p>
                 <p>• Items must be unworn with original tags</p>
                 <p>• Free returns for defective items</p>
-                <p>• Return shipping fee: $4.99 (deducted from refund)</p>
+                <p>• Return shipping fee: {formatPrice(returnFee)} (deducted from refund)</p>
               </div>
             </div>
           </div>
         );
+      }
       default:
         return null;
     }

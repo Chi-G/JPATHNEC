@@ -21,13 +21,14 @@ class Product extends Model
         'sku',
         'price',
         'compare_price',
-        'cost_price', 
+        'cost_price',
         'stock_quantity',
         'track_stock',
         'is_active',
         'is_featured',
         'is_new',
         'is_bestseller',
+        'is_trending',
         'brand',
         'material',
         'fit',
@@ -56,6 +57,7 @@ class Product extends Model
         'is_featured' => 'boolean',
         'is_new' => 'boolean',
         'is_bestseller' => 'boolean',
+        'is_trending' => 'boolean',
         'track_stock' => 'boolean',
         'sizes' => 'array',
         'colors' => 'array',
@@ -81,8 +83,10 @@ class Product extends Model
             }
         });
 
+        // Prevent accidental slug overwrites on update. Only generate a slug
+        // if the original slug was empty and the name changed.
         static::updating(function ($product) {
-            if ($product->isDirty('name') && empty($product->slug)) {
+            if ($product->isDirty('name') && empty($product->getOriginal('slug'))) {
                 $product->slug = Str::slug($product->name);
             }
         });
@@ -169,6 +173,14 @@ class Product extends Model
     }
 
     /**
+     * Scope to get trending products.
+     */
+    public function scopeTrending($query)
+    {
+        return $query->where('is_trending', true);
+    }
+
+    /**
      * Scope to filter by category.
      */
     public function scopeInCategory($query, $categoryId)
@@ -243,7 +255,7 @@ class Product extends Model
      */
     public function getFormattedPriceAttribute(): string
     {
-        return '$' . number_format((float) $this->price, 2);
+        return '₦' . number_format((float) $this->price, 2);
     }
 
     /**
@@ -251,7 +263,7 @@ class Product extends Model
      */
     public function getFormattedComparePriceAttribute(): ?string
     {
-        return $this->compare_price ? '$' . number_format((float) $this->compare_price, 2) : null;
+        return $this->compare_price ? '₦' . number_format((float) $this->compare_price, 2) : null;
     }
 
     /**

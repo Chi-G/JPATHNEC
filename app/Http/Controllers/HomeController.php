@@ -70,7 +70,7 @@ class HomeController extends Controller
         $newArrivals = Product::with(['images', 'category'])
             ->active()
             ->new()
-            ->limit(8)
+            ->limit(4)
             ->get()
             ->map($mapProduct);
 
@@ -78,16 +78,27 @@ class HomeController extends Controller
             ->active()
             ->bestseller()
             ->orderBy('sales_count', 'desc')
-            ->limit(8)
+            ->limit(4)
             ->get()
             ->map($mapProduct);
 
-        $trending = Product::with(['images', 'category'])
-            ->active()
-            ->orderBy('view_count', 'desc')
-            ->limit(8)
-            ->get()
-            ->map($mapProduct);
+        // Prefer products explicitly marked as trending by admins; fall back to popular by views
+        $trendingQuery = Product::with(['images', 'category'])->active();
+
+        $trendingCount = $trendingQuery->where('is_trending', true)->count();
+
+        if ($trendingCount > 0) {
+            $trending = $trendingQuery->where('is_trending', true)
+                ->orderBy('updated_at', 'desc')
+                ->limit(4)
+                ->get()
+                ->map($mapProduct);
+        } else {
+            $trending = $trendingQuery->orderBy('view_count', 'desc')
+                ->limit(4)
+                ->get()
+                ->map($mapProduct);
+        }
 
         return [
             'new_arrivals' => $newArrivals,

@@ -306,7 +306,7 @@ const Register: React.FC = () => {
                     <div>
                       <h4 className="font-medium text-foreground text-sm">Free Shipping</h4>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Enjoy free shipping on orders over $50 and priority delivery
+                        Enjoy free shipping on orders over ₦50 and priority delivery
                       </p>
                     </div>
                   </div>

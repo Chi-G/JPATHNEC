@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class ProductImage extends Model
 {
@@ -45,17 +46,14 @@ class ProductImage extends Model
      */
     public function getFullUrlAttribute(): string
     {
-        // If it's already a full URL, return as is
         if (filter_var($this->image_path, FILTER_VALIDATE_URL)) {
             return $this->image_path;
         }
         
-        // Check if it's a local storage path
         if (strpos($this->image_path, 'products/') === 0) {
             return asset('storage/' . $this->image_path);
         }
         
-        // Otherwise, prepend the app URL
         return url($this->image_path);
     }
 
@@ -64,17 +62,14 @@ class ProductImage extends Model
      */
     public function getImageUrlAttribute(): string
     {
-        // For hero images or other storage paths
         if (strpos($this->image_path, 'hero/') === 0 || strpos($this->image_path, 'products/') === 0) {
             return asset('storage/' . $this->image_path);
         }
         
-        // If it's already a full URL, return as is
         if (filter_var($this->image_path, FILTER_VALIDATE_URL)) {
             return $this->image_path;
         }
         
-        // Otherwise, prepend the app URL
         return url($this->image_path);
     }
 
@@ -84,6 +79,47 @@ class ProductImage extends Model
     public function scopeHero($query)
     {
         return $query->where('type', 'hero')->orderBy('sort_order');
+    }
+
+    /**
+     * Ensure image_path is normalized to storage 'products/' and move files from
+     * private disk to public/products if necessary.
+     */
+    public function setImagePathAttribute($value)
+    {
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            $this->attributes['image_path'] = $value;
+            return;
+        }
+
+        if (strpos($value, 'products/') === 0 || strpos($value, 'hero/') === 0) {
+            $this->attributes['image_path'] = $value;
+            return;
+        }
+
+        if (Storage::disk('public')->exists($value)) {
+            $this->attributes['image_path'] = $value;
+            return;
+        }
+
+        if (Storage::disk('local')->exists($value) || Storage::disk('local')->exists('private/' . $value)) {
+            $source = Storage::disk('local')->exists($value) ? $value : 'private/' . $value;
+            $basename = basename($value);
+            $dest = 'products/' . $basename;
+
+            try {
+                $contents = Storage::disk('local')->get($source);
+                Storage::disk('public')->put($dest, $contents);
+                Storage::disk('local')->delete($source);
+                $this->attributes['image_path'] = $dest;
+                return;
+            } catch (\Throwable $e) {
+                $this->attributes['image_path'] = $value;
+                return;
+            }
+        }
+
+        $this->attributes['image_path'] = $value;
     }
 }
  

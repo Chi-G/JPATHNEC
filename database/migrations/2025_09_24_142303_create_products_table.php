@@ -25,8 +25,8 @@ return new class extends Migration
             $table->boolean('track_stock')->default(true);
             $table->boolean('is_active')->default(true);
             $table->boolean('is_featured')->default(false);
-            $table->boolean('is_new')->default(false);
-            $table->boolean('is_bestseller')->default(false);
+            $table->boolean(column: 'is_new')->default(false);
+            $table->boolean(column: 'is_bestseller')->default(false);
 
             // Product specifications
             $table->string('brand')->nullable();

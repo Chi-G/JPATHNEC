@@ -19,11 +19,9 @@ interface Review {
 
 interface CustomerReviewsProps {
   reviews: Review[];
-  averageRating: number;
-  totalReviews: number;
 }
 
-const CustomerReviews: React.FC<CustomerReviewsProps> = ({ reviews, averageRating, totalReviews }) => {
+const CustomerReviews: React.FC<CustomerReviewsProps> = ({ reviews }) => {
   const [sortBy, setSortBy] = useState('newest');
   const [filterRating, setFilterRating] = useState('all');
   const [showAllReviews, setShowAllReviews] = useState(false);
@@ -60,15 +58,46 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({ reviews, averageRatin
     { value: '1', label: '1 Star' }
   ];
 
-  const ratingDistribution = [
-    { stars: 5, count: 45, percentage: 65 },
-    { stars: 4, count: 15, percentage: 22 },
-    { stars: 3, count: 6, percentage: 9 },
-    { stars: 2, count: 2, percentage: 3 },
-    { stars: 1, count: 1, percentage: 1 }
-  ];
+  // derive aggregates from reviews prop
+  const totalReviews = reviews?.length || 0;
+  const averageRating = totalReviews
+    ? Number((reviews.reduce((s, r) => s + (r.rating || 0), 0) / totalReviews).toFixed(1))
+    : 0;
 
-  const displayedReviews = showAllReviews ? reviews : reviews?.slice(0, 3);
+  const ratingCounts = [5, 4, 3, 2, 1].map((stars) => ({
+    stars,
+    count: reviews?.filter((r) => Math.round(r.rating) === stars).length || 0
+  }));
+
+  const ratingDistribution = ratingCounts.map((r) => ({
+    stars: r.stars,
+    count: r.count,
+    percentage: totalReviews ? Math.round((r.count / totalReviews) * 100) : 0
+  }));
+
+  // apply rating filter
+  const filteredByRating = filterRating === 'all'
+    ? reviews
+    : reviews?.filter((r) => Math.round(r.rating) === Number(filterRating));
+
+  // apply sorting
+  const sorted = [...(filteredByRating || [])].sort((a, b) => {
+    switch (sortBy) {
+      case 'oldest':
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      case 'highest':
+        return b.rating - a.rating;
+      case 'lowest':
+        return a.rating - b.rating;
+      case 'helpful':
+        return (b.helpfulCount || 0) - (a.helpfulCount || 0);
+      case 'newest':
+      default:
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+    }
+  });
+
+  const displayedReviews = showAllReviews ? sorted : sorted?.slice(0, 3);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString)?.toLocaleDateString('en-US', {
@@ -97,7 +126,7 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({ reviews, averageRatin
               ))}
             </div>
           </div>
-          <p className="text-muted-foreground">Based on {totalReviews} reviews</p>
+          <p className="text-muted-foreground">Based on {totalReviews} review{totalReviews !== 1 ? 's' : ''}</p>
         </div>
 
         <div className="space-y-2">

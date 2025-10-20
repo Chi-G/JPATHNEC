@@ -7,6 +7,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ToggleColumn as FilamentToggleColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -24,7 +25,7 @@ class ProductsTable
                     ->label('SKU')
                     ->searchable(),
                 TextColumn::make('price')
-                    ->money()
+                    ->formatStateUsing(fn($state) => '₦' . number_format((float) $state, 2))
                     ->sortable(),
                 TextColumn::make('compare_price')
                     ->numeric()
@@ -35,18 +36,24 @@ class ProductsTable
                 TextColumn::make('stock_quantity')
                     ->numeric()
                     ->sortable(),
-                IconColumn::make('track_stock')
-                    ->boolean(),
-                IconColumn::make('is_active')
-                    ->boolean(),
-                IconColumn::make('is_featured')
-                    ->boolean(),
-                IconColumn::make('is_new')
-                    ->boolean(),
-                IconColumn::make('is_bestseller')
-                    ->boolean(),
-                IconColumn::make('is_trending')
-                    ->boolean(),
+                FilamentToggleColumn::make('track_stock')
+                    ->label('Track Stock')
+                    ->sortable(),
+                FilamentToggleColumn::make('is_active')
+                    ->label('Active')
+                    ->sortable(),
+                FilamentToggleColumn::make('is_featured')
+                    ->label('Featured')
+                    ->sortable(),
+                FilamentToggleColumn::make('is_new')
+                    ->label('New Arrival')
+                    ->sortable(),
+                FilamentToggleColumn::make('is_bestseller')
+                    ->label('Best Seller')
+                    ->sortable(),
+                FilamentToggleColumn::make('is_trending')
+                    ->label('Trending')
+                    ->sortable(),
                 TextColumn::make('brand')
                     ->searchable(),
                 TextColumn::make('material')
@@ -81,7 +88,22 @@ class ProductsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                \Filament\Tables\Filters\TernaryFilter::make('is_new')
+                    ->label('New Arrivals')
+                    ->trueLabel('Yes')
+                    ->falseLabel('No'),
+                \Filament\Tables\Filters\TernaryFilter::make('is_bestseller')
+                    ->label('Best Seller')
+                    ->trueLabel('Yes')
+                    ->falseLabel('No'),
+                \Filament\Tables\Filters\TernaryFilter::make('is_trending')
+                    ->label('Trending')
+                    ->trueLabel('Yes')
+                    ->falseLabel('No'),
+                \Filament\Tables\Filters\TernaryFilter::make('is_featured')
+                    ->label('Featured')
+                    ->trueLabel('Yes')
+                    ->falseLabel('No'),
             ])
             ->recordActions([
                 ViewAction::make(),

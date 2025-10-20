@@ -16,8 +16,21 @@ class ProductController extends Controller
      */
     public function index(Request $request): Response
     {
+        // Accept category/filter from either query string or optional route parameter
         $category = $request->query('category');
         $filter = $request->query('filter');
+
+        $routeParam = $request->route('filter'); // matches /product-list/{filter?}
+        // If route param exists and no explicit query params were provided, decide whether it's a filter or a category slug
+        if ($routeParam && !$category && !$filter) {
+            $knownFilters = ['new', 'new-arrivals', 'new-arrival', 'new_arrivals', 'bestsellers', 'bestseller', 'best_sellers', 'best-sellers', 'featured', 'trending', 'trending-now', 'trending_now', 'sale', 'premium'];
+            if (in_array($routeParam, $knownFilters, true)) {
+                $filter = $routeParam;
+            } else {
+                // treat as category slug
+                $category = $routeParam;
+            }
+        }
         $search = $request->query('search');
         $sort = $request->query('sort', 'created_at');
         $order = $request->query('order', 'desc');
@@ -32,17 +45,20 @@ class ProductController extends Controller
                 $query->where('category_id', $categoryModel->id);
             }
         }
-
+ 
         if ($search) {
             $query->search($search);
         }
 
-        if ($filter === 'new-arrivals') {
+        // Support multiple filter naming conventions from frontend
+        if (in_array($filter, ['new', 'new-arrivals', 'new-arrival', 'new_arrivals'])) {
             $query->new();
-        } elseif ($filter === 'bestsellers') {
+        } elseif (in_array($filter, ['bestsellers', 'bestseller', 'best_sellers', 'best-sellers'])) {
             $query->bestseller();
-        } elseif ($filter === 'featured') {
+        } elseif (in_array($filter, ['featured'])) {
             $query->featured();
+        } elseif (in_array($filter, ['trending', 'trending-now', 'trending_now'])) {
+            $query->trending();
         }
 
         $products = $query->orderBy($sort, $order)
@@ -275,7 +291,6 @@ class ProductController extends Controller
      */
     private function getProductReviews($productId): array
     {
-        // TODO: Implement reviews system
         return [
             [
                 'id' => 1,
@@ -331,10 +346,10 @@ class ProductController extends Controller
     {
         return [
             'price_ranges' => [
-                ['min' => 0, 'max' => 25, 'label' => 'Under $25'],
-                ['min' => 25, 'max' => 50, 'label' => '$25 - $50'],
-                ['min' => 50, 'max' => 100, 'label' => '$50 - $100'],
-                ['min' => 100, 'max' => null, 'label' => 'Over $100'],
+                ['min' => 0, 'max' => 25, 'label' => 'Under ₦25'],
+                ['min' => 25, 'max' => 50, 'label' => '₦25 - ₦50'],
+                ['min' => 50, 'max' => 100, 'label' => '₦50 - ₦100'],
+                ['min' => 100, 'max' => null, 'label' => 'Over ₦100'],
             ],
             'sizes' => ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
             'colors' => ['Black', 'White', 'Blue', 'Red', 'Green'],

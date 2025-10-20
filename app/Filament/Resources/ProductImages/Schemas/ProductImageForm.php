@@ -18,6 +18,9 @@ class ProductImageForm
                     ->relationship('product', 'name'),
                 FileUpload::make('image_path')
                     ->image()
+                    ->disk('public')
+                    ->directory('products')
+                    ->visibility('public')
                     ->required(),
                 TextInput::make('alt_text'),
                 Toggle::make('is_primary')

@@ -72,6 +72,24 @@ export interface Product {
     selectedSize?: string;
     created_at?: string;
     updated_at?: string;
+    // Additional product details used on product pages
+    material?: string;
+    fit?: string;
+    origin?: string;
+    // sizeChart entries used by the sizing tab
+    sizeChart?: Array<{
+      size?: string;
+      chest?: string | number | null;
+      waist?: string | number | null;
+      length?: string | number | null;
+    }>;
+    // care instructions lines
+    careInstructions?: string[];
+    // shipping/returns (may come from backend)
+    shippingOptions?: ShippingOption[];
+    returnShippingFee?: number | null;
+    // allow snake_case fallbacks that sometimes come from the backend
+    return_shipping_fee?: number | null;
 }
 
 export interface Category {

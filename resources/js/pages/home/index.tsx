@@ -96,7 +96,7 @@ const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories,
       <Head title="JPATHNEC - Premium Men's & Women's Apparel and Footwear">
         <meta
           name="description"
-          content="Discover premium quality men's and women's clothing and footwear at JPATHNEC. Shop t-shirts, polos, corporate shirts, trousers, shoes, sneakers, and more with free shipping on orders over $75."
+          content="Discover premium quality men's and women's clothing and footwear at JPATHNEC. Shop t-shirts, polos, corporate shirts, trousers, shoes, sneakers, and more with free shipping on orders over ₦75."
         />
         <meta
           name="keywords"

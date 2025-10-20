@@ -3,6 +3,7 @@ import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 import Button from '../../../components/ui/button';
 import type { Product } from '../../../types';
+import formatPrice from '../../../lib/formatPrice';
 
 type CartItem = Product & {
   selectedSize?: string;
@@ -78,11 +79,11 @@ const QuickAddModal = ({ product, isOpen, onClose, onAddToCart }: QuickAddModalP
             <div className="flex-1">
               <h3 className="font-medium text-foreground mb-1">{product?.name}</h3>
               <p className="text-lg font-semibold text-foreground">
-                ${product?.price?.toFixed(2)}
+                {formatPrice(product?.price)}
               </p>
               {product?.originalPrice !== undefined && product?.price !== undefined && product.originalPrice > product.price && (
                 <p className="text-sm text-muted-foreground line-through">
-                  ${product.originalPrice.toFixed(2)}
+                  {formatPrice(product.originalPrice)}
                 </p>
               )}
             </div>
@@ -199,7 +200,7 @@ const QuickAddModal = ({ product, isOpen, onClose, onAddToCart }: QuickAddModalP
             iconName="ShoppingCart"
             iconPosition="left"
           >
-            Add to Cart - ${((product?.price ?? 0) * quantity).toFixed(2)}
+            Add to Cart - {formatPrice(((product?.price ?? 0) * quantity))}
           </Button>
 
           {/* Requirements Note */}
