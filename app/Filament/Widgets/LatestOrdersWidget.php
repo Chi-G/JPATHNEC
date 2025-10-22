@@ -20,7 +20,7 @@ class LatestOrdersWidget extends TableWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn (): Builder => Order::query()->latest()->limit(10))
+            ->query(fn (): Builder => Order::query()->latest()->limit(5))
             ->columns([
                 TextColumn::make('order_number')
                     ->label('Order #')
