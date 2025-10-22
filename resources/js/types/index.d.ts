@@ -53,14 +53,18 @@ export interface Product {
     brand?: string;
     price?: number;
     originalPrice?: number;
+    original_price?: number;
     image?: string;
     description?: string;
     category?: string;
     isNew?: boolean;
+    is_new?: boolean;
     isBestseller?: boolean;
+    is_bestseller?: boolean;
     discount?: number;
     rating?: number;
     reviewCount?: number;
+    review_count?: number;
     isWishlisted?: boolean;
     colors?: Color[];
     sizes?: string[];
@@ -70,25 +74,21 @@ export interface Product {
     featured?: boolean;
     selectedColor?: string;
     selectedSize?: string;
+    selected_size?: string;
     created_at?: string;
     updated_at?: string;
-    // Additional product details used on product pages
     material?: string;
     fit?: string;
     origin?: string;
-    // sizeChart entries used by the sizing tab
     sizeChart?: Array<{
       size?: string;
       chest?: string | number | null;
       waist?: string | number | null;
       length?: string | number | null;
     }>;
-    // care instructions lines
     careInstructions?: string[];
-    // shipping/returns (may come from backend)
     shippingOptions?: ShippingOption[];
     returnShippingFee?: number | null;
-    // allow snake_case fallbacks that sometimes come from the backend
     return_shipping_fee?: number | null;
 }
 
@@ -107,25 +107,6 @@ export interface Category {
     product_count?: number;
 }
 
-export interface Product {
-  id: number;
-  name: string;
-  brand?: string;
-  price: number;
-  original_price?: number;
-  rating: number;
-  review_count: number;
-  image?: string;
-  is_new?: boolean;
-  is_bestseller?: boolean;
-  discount?: number;
-  category: string;
-  slug: string;
-  colors?: { name: string; hex: string }[];
-  sizes?: string[];
-  in_stock?: boolean;
-  selectedSize: string;
-}
 
 // Checkout Types
 export interface CartItem {
