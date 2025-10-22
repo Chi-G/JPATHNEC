@@ -20,14 +20,13 @@ class ProductController extends Controller
         $category = $request->query('category');
         $filter = $request->query('filter');
 
-        $routeParam = $request->route('filter'); // matches /product-list/{filter?}
+        $routeParam = $request->route('filter');
         // If route param exists and no explicit query params were provided, decide whether it's a filter or a category slug
         if ($routeParam && !$category && !$filter) {
             $knownFilters = ['new', 'new-arrivals', 'new-arrival', 'new_arrivals', 'bestsellers', 'bestseller', 'best_sellers', 'best-sellers', 'featured', 'trending', 'trending-now', 'trending_now', 'sale', 'premium'];
             if (in_array($routeParam, $knownFilters, true)) {
                 $filter = $routeParam;
             } else {
-                // treat as category slug
                 $category = $routeParam;
             }
         }
@@ -45,7 +44,7 @@ class ProductController extends Controller
                 $query->where('category_id', $categoryModel->id);
             }
         }
- 
+
         if ($search) {
             $query->search($search);
         }
@@ -212,10 +211,37 @@ class ProductController extends Controller
         // Increment view count
         $product->incrementViewCount();
 
-        // Normalize colors to match frontend expectation
+        // Normalize colors to match frontend expectation and guard against invalid types
+        $rawColors = $product->colors;
+        if (is_string($rawColors)) {
+            $decoded = json_decode($rawColors, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $rawColors = $decoded;
+            } else {
+                // Fallback: support comma-separated strings like "red,blue"
+                $rawColors = array_filter(array_map('trim', explode(',', $rawColors)));
+            }
+        }
+        if (!is_array($rawColors)) {
+            $rawColors = [];
+        }
         $colors = array_map(function ($color) {
-            return is_array($color) ? $color['name'] : $color;
-        }, $product->colors ?? []);
+            return is_array($color) ? ($color['name'] ?? ($color['hex'] ?? '')) : $color;
+        }, $rawColors);
+
+        // Normalize sizes similarly (ensure array)
+        $rawSizes = $product->sizes;
+        if (is_string($rawSizes)) {
+            $decodedSizes = json_decode($rawSizes, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decodedSizes)) {
+                $rawSizes = $decodedSizes;
+            } else {
+                $rawSizes = array_filter(array_map('trim', explode(',', $rawSizes)));
+            }
+        }
+        if (!is_array($rawSizes)) {
+            $rawSizes = [];
+        }
 
         return [
             'id' => $product->id,
@@ -241,7 +267,7 @@ class ProductController extends Controller
                     'is_primary' => $image->is_primary ?? false,
                 ];
             })->toArray(),
-            'sizes' => $product->sizes ?? [],
+            'sizes' => $rawSizes,
             'colors' => $colors, // Use normalized colors
             'in_stock' => $product->inStock(),
             'stock_quantity' => $product->track_stock ? $product->stock_quantity : null,
