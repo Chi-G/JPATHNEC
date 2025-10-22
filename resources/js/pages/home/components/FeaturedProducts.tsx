@@ -2,11 +2,12 @@ import React from 'react';
 import { Link } from '@inertiajs/react';
 import ProductCard from './ProductCard';
 import Button from '../../../components/ui/button';
+import ErrorBoundary from '../../../components/ErrorBoundary';
 import { Product } from '../../../types';
 
 interface FeaturedProductsProps {
   title: string;
-  products: Product[]; 
+  products: Product[];
   viewAllLink?: string;
   onAddToCart: (productId: string | number) => void;
 }
@@ -21,7 +22,7 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ title, products, vi
             <h2 className="text-3xl font-bold text-foreground mb-2">
               {title}
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground"> 
               Discover our curated selection of premium products
             </p>
           </div>
@@ -36,13 +37,20 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ title, products, vi
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products?.map((product) => (
-            <ProductCard
-              key={product?.id}
-              product={product}
-              onAddToCart={onAddToCart}
-            />
-          ))}
+          {products && products.length > 0 ? (
+            products.map((product) => (
+              <ErrorBoundary key={product?.id}>
+                <ProductCard
+                  product={product}
+                  onAddToCart={onAddToCart}
+                />
+              </ErrorBoundary>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-8">
+              <p className="text-muted-foreground">No products available at the moment.</p>
+            </div>
+          )}
         </div>
 
         {/* Mobile View All Button */}
