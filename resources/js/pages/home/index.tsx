@@ -25,7 +25,7 @@ interface HeroSlide {
 interface HomeProps {
   featured_products: {
     new_arrivals: Product[];
-    best_sellers: Product[];
+    best_sellers: Product[]; 
     trending: Product[];
   };
   categories: Category[];
@@ -38,7 +38,14 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories, auth, cartCount, verified }) => {
-  const { new_arrivals, best_sellers, trending } = featured_products;
+  // Add defensive checks for featured_products
+  const { new_arrivals = [], best_sellers = [], trending = [] } = featured_products || {};
+
+  // Debug logging to see what data we're receiving
+  console.log('Featured products data:', featured_products);
+  console.log('New arrivals:', new_arrivals);
+  console.log('Best sellers:', best_sellers);
+  console.log('Trending:', trending);
 
   // Show verification success toast
   useEffect(() => {
