@@ -13,16 +13,27 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
-  const [isWishlisted, setIsWishlisted] = useState(product.isWishlisted ?? false);
+  const [isWishlisted, setIsWishlisted] = useState(product?.isWishlisted ?? false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+
+  // Add defensive checks for product data
+  if (!product) {
+    console.log('ProductCard: No product data provided');
+    return null;
+  }
+
+  // Debug logging
+  console.log('ProductCard rendering with product:', product);
+  console.log('Product colors:', product.colors, 'Type:', typeof product.colors, 'Is Array:', Array.isArray(product.colors));
+  console.log('Product sizes:', product.sizes, 'Type:', typeof product.sizes, 'Is Array:', Array.isArray(product.sizes));
 
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Get CSRF token from meta tag
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    
+
     try {
       const response = await fetch('/wishlist/toggle', {
         method: 'POST',
@@ -166,7 +177,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
               </span>
             )}
           </div>
-          {product.colors && product.colors.length > 0 && (
+          {product.colors && Array.isArray(product.colors) && product.colors.length > 0 && (
             <div className="flex items-center gap-1 mt-3">
               {product.colors.slice(0, 4).map((color, index) => (
                 <div
@@ -183,7 +194,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
               )}
             </div>
           )}
-          {product.sizes && product.sizes.length > 0 && (
+          {product.sizes && Array.isArray(product.sizes) && product.sizes.length > 0 && (
             <div className="flex items-center gap-1 mt-2">
               <span className="text-xs text-muted-foreground mr-1">Sizes:</span>
               <span className="text-xs text-foreground">{product.sizes.join(', ')}</span>
