@@ -60,8 +60,8 @@ class HomeController extends Controller
                 'isNew' => $product->is_new,
                 'isBestseller' => $product->is_bestseller,
                 'discount' => $product->discount_percentage,
-                'colors' => $product->colors ?? [],
-                'sizes' => $product->sizes ?? [],
+                'colors' => is_array($product->colors) ? $product->colors : [],
+                'sizes' => is_array($product->sizes) ? $product->sizes : [],
                 'isWishlisted' => $user ? $product->wishlistUsers()->where('user_id', $user->id)->exists() : false,
                 'slug' => $product->slug,
             ];
