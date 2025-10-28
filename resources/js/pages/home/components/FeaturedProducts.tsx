@@ -22,7 +22,7 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ title, products, vi
             <h2 className="text-3xl font-bold text-foreground mb-2">
               {title}
             </h2>
-            <p className="text-muted-foreground"> 
+            <p className="text-muted-foreground">
               Discover our curated selection of premium products
             </p>
           </div>
@@ -37,9 +37,9 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ title, products, vi
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products && products.length > 0 ? (
-            products.map((product) => (
-              <ErrorBoundary key={product?.id}>
+          {products && Array.isArray(products) && products.length > 0 ? (
+            products.filter(product => product && product.id).map((product) => (
+              <ErrorBoundary key={product.id}>
                 <ProductCard
                   product={product}
                   onAddToCart={onAddToCart}

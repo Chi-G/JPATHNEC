@@ -16,20 +16,28 @@ class ProductController extends Controller
      */
     public function index(Request $request): Response
     {
-        // Accept category/filter from either query string or optional route parameter
         $category = $request->query('category');
         $filter = $request->query('filter');
-
         $routeParam = $request->route('filter');
-        // If route param exists and no explicit query params were provided, decide whether it's a filter or a category slug
-        if ($routeParam && !$category && !$filter) {
-            $knownFilters = ['new', 'new-arrivals', 'new-arrival', 'new_arrivals', 'bestsellers', 'bestseller', 'best_sellers', 'best-sellers', 'featured', 'trending', 'trending-now', 'trending_now', 'sale', 'premium'];
-            if (in_array($routeParam, $knownFilters, true)) {
-                $filter = $routeParam;
-            } else {
-                $category = $routeParam;
-            }
+
+        // Normalize inputs
+        $routeParam = is_string($routeParam) ? strtolower(trim($routeParam)) : null;
+        $filter = is_string($filter) ? strtolower(trim($filter)) : $filter;
+
+        $knownFilters = [
+            'new', 'new-arrivals', 'new-arrival', 'new_arrivals',
+            'bestsellers', 'bestseller', 'best_sellers', 'best-sellers',
+            'featured', 'trending', 'trending-now', 'trending_now',
+            'sale', 'on-sale', 'onsale', 'premium'
+        ];
+
+        if ($routeParam && !$category && !$filter && in_array($routeParam, $knownFilters, true)) {
+            $filter = $routeParam;
         }
+
+        // Re-normalize filter
+        $filter = $filter ? strtolower($filter) : null;
+
         $search = $request->query('search');
         $sort = $request->query('sort', 'created_at');
         $order = $request->query('order', 'desc');
@@ -50,24 +58,35 @@ class ProductController extends Controller
         }
 
         // Support multiple filter naming conventions from frontend
-        if (in_array($filter, ['new', 'new-arrivals', 'new-arrival', 'new_arrivals'])) {
+        if (in_array($filter, ['new', 'new-arrivals', 'new-arrival', 'new_arrivals'], true)) {
             $query->new();
-        } elseif (in_array($filter, ['bestsellers', 'bestseller', 'best_sellers', 'best-sellers'])) {
+        } elseif (in_array($filter, ['bestsellers', 'bestseller', 'best_sellers', 'best-sellers'], true)) {
             $query->bestseller();
-        } elseif (in_array($filter, ['featured'])) {
+        } elseif (in_array($filter, ['featured'], true)) {
             $query->featured();
-        } elseif (in_array($filter, ['trending', 'trending-now', 'trending_now'])) {
+        } elseif (in_array($filter, ['trending', 'trending-now', 'trending_now'], true)) {
             $query->trending();
+        } elseif (in_array($filter, ['sale', 'on-sale', 'onsale'], true)) {
+            // Products where compare_price is greater than price
+            $query->whereNotNull('compare_price')->whereColumn('compare_price', '>', 'price');
+        } elseif (in_array($filter, ['premium'], true)) {
+            $query->featured();
         }
 
         $products = $query->orderBy($sort, $order)
             ->paginate($perPage, ['*'], 'page', $page)
             ->withQueryString()
-            ->through(function ($product) {
+            ->through(function ($product) use ($request) {
+                $user = $request->user();
+                $isWishlisted = $user ? $user->wishlist()->where('product_id', $product->id)->exists() : false;
+
+                $colors = $this->normalizeJsonAttribute($product->colors);
+                $sizes = $this->normalizeJsonAttribute($product->sizes);
+
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
-                    'category' => $product->category->name,
+                    'category' => $product->category?->name ?? 'Uncategorized',
                     'price' => (float) $product->price,
                     'original_price' => $product->compare_price ? (float) $product->compare_price : null,
                     'rating' => (float) $product->rating,
@@ -78,8 +97,9 @@ class ProductController extends Controller
                     'discount' => $product->discount_percentage,
                     'in_stock' => $product->inStock(),
                     'slug' => $product->slug,
-                    'colors' => $product->colors ?? [],
-                    'sizes' => $product->sizes ?? [],
+                    'colors' => $colors,
+                    'sizes' => $sizes,
+                    'isWishlisted' => $isWishlisted,
                 ];
             });
 
@@ -119,6 +139,24 @@ class ProductController extends Controller
             'user' => $user,
             'cartCount' => $user ? $user->cartItems()->sum('quantity') : 0,
         ]);
+    }
+
+    private function normalizeJsonAttribute($value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return $decoded;
+            }
+            // Fallback: split by comma
+            return array_filter(array_map('trim', preg_replace('/\s+/', ' ', explode(',', $value))));
+        }
+
+        return [];
     }
 
     /**
@@ -208,17 +246,14 @@ class ProductController extends Controller
             return null;
         }
 
-        // Increment view count
         $product->incrementViewCount();
 
-        // Normalize colors to match frontend expectation and guard against invalid types
         $rawColors = $product->colors;
         if (is_string($rawColors)) {
             $decoded = json_decode($rawColors, true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                 $rawColors = $decoded;
             } else {
-                // Fallback: support comma-separated strings like "red,blue"
                 $rawColors = array_filter(array_map('trim', explode(',', $rawColors)));
             }
         }
@@ -229,7 +264,6 @@ class ProductController extends Controller
             return is_array($color) ? ($color['name'] ?? ($color['hex'] ?? '')) : $color;
         }, $rawColors);
 
-        // Normalize sizes similarly (ensure array)
         $rawSizes = $product->sizes;
         if (is_string($rawSizes)) {
             $decodedSizes = json_decode($rawSizes, true);
@@ -268,7 +302,7 @@ class ProductController extends Controller
                 ];
             })->toArray(),
             'sizes' => $rawSizes,
-            'colors' => $colors, // Use normalized colors
+            'colors' => $colors,
             'in_stock' => $product->inStock(),
             'stock_quantity' => $product->track_stock ? $product->stock_quantity : null,
             'features' => $product->features ?? [],

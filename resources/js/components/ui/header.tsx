@@ -47,17 +47,17 @@ const Header: React.FC<HeaderProps> = ({ user = null, cartCount = 0 }) => {
     },
     women: {
       label: "Women's",
-      path: '/product-list/women',
+      path: '/product-list/womens',
       subcategories: [
-        { label: 'T-Shirts', path: '/product-list/women?t=tshirts', icon: 'Shirt' },
-        { label: 'Polos', path: '/product-list/women?t=polos', icon: 'Shirt' },
-        { label: 'Corporate Shirts', path: '/product-list/women?t=corporate', icon: 'Briefcase' },
-        { label: 'Trousers', path: '/product-list/women?t=trousers', icon: 'Shirt' },
-        { label: 'Pants', path: '/product-list/women?t=pants', icon: 'Shirt' },
-        { label: 'Shoes', path: '/product-list/women?t=shoes', icon: 'Footprints' },
-        { label: 'Sneakers', path: '/product-list/women?t=sneakers', icon: 'Footprints' },
-        { label: 'Sandals', path: '/product-list/women?t=sandals', icon: 'Footprints' },
-        { label: 'Slippers', path: '/product-list/women?t=slippers', icon: 'Footprints' },
+        { label: 'T-Shirts', path: '/product-list/womens?t=tshirts', icon: 'Shirt' },
+        { label: 'Polos', path: '/product-list/womens?t=polos', icon: 'Shirt' },
+        { label: 'Corporate Shirts', path: '/product-list/womens?t=corporate', icon: 'Briefcase' },
+        { label: 'Trousers', path: '/product-list/womens?t=trousers', icon: 'Shirt' },
+        { label: 'Pants', path: '/product-list/womens?t=pants', icon: 'Shirt' },
+        { label: 'Shoes', path: '/product-list/womens?t=shoes', icon: 'Footprints' },
+        { label: 'Sneakers', path: '/product-list/womens?t=sneakers', icon: 'Footprints' },
+        { label: 'Sandals', path: '/product-list/womens?t=sandals', icon: 'Footprints' },
+        { label: 'Slippers', path: '/product-list/womens?t=slippers', icon: 'Footprints' },
       ]
     }
   };
@@ -317,7 +317,7 @@ const Header: React.FC<HeaderProps> = ({ user = null, cartCount = 0 }) => {
                           <Icon name="Package" size={16} className="mr-3 text-muted-foreground" />
                           My Orders
                         </Link>
-                        <Link 
+                        <Link
                           href="/wishlist"
                           className="flex items-center px-3 py-2 text-sm text-foreground hover:bg-muted rounded transition-hover"
                         >

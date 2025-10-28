@@ -13,8 +13,21 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
+  // Initialize hooks at top level to satisfy Rules of Hooks
   const [isWishlisted, setIsWishlisted] = useState(product?.isWishlisted || false);
   const [isHovered, setIsHovered] = useState(false);
+
+  // Add safety check
+  if (!product) {
+    console.error('ProductCard: No product provided');
+    return null;
+  }
+
+  // Validate product has minimum required fields
+  if (!product.id || !product.name) {
+    console.error('ProductCard: Invalid product data', product);
+    return null;
+  }
 
   const handleWishlistClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -95,14 +108,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden bg-muted">
         <Image
-          src={product.image}
-          alt={product.name}
+          src={product.image || '/images/placeholder-product.jpg'}
+          alt={product.name || 'Product'}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
         />
 
         {/* Badges */}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
-          {product.isNew && (
+          {(product.isNew || product.is_new) && (
             <span className="px-2 py-1 bg-secondary text-secondary-foreground text-xs font-medium rounded">
               New
             </span>
@@ -112,7 +125,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
               -{product.discount}%
             </span>
           )}
-          {product.isBestseller && (
+          {(product.is_bestseller || product.isBestseller) && (
             <span className="px-2 py-1 bg-accent text-accent-foreground text-xs font-medium rounded">
               Bestseller
             </span>
@@ -162,7 +175,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
 
         {/* Product Name */}
         <h3 className="font-medium text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-          {product.name}
+          {product.name || 'Untitled Product'}
         </h3>
 
         {/* Rating */}
@@ -174,11 +187,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
         {/* Price */}
         <div className="flex items-center gap-2 mb-2">
           <span className="text-lg font-semibold text-foreground">
-            {formatPrice(product.price)}
+            {formatPrice(product.price ?? 0)}
           </span>
-          {product.originalPrice && product.originalPrice > (product.price || 0) && (
+          {((product.originalPrice ?? product.original_price ?? 0) > (product.price ?? 0)) && (
             <span className="text-sm text-muted-foreground line-through">
-              {formatPrice(product.originalPrice)}
+              {formatPrice(product.originalPrice ?? product.original_price ?? 0)}
             </span>
           )}
         </div>
@@ -187,17 +200,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
         {product.colors && product.colors.length > 0 && (
           <div className="flex items-center gap-1 mb-2">
             <span className="text-xs text-muted-foreground mr-1">Colors:</span>
-            {product.colors.slice(0, 4).map((color, index) => (
-              <div
-                key={index}
-                className="w-4 h-4 rounded-full border border-border"
-                style={{ backgroundColor: color.hex }}
-                title={color.name}
-              />
-            ))}
-            {product.colors.length > 4 && (
-              <span className="text-xs text-muted-foreground">+{product.colors.length - 4}</span>
-            )}
+            <span className="text-xs text-foreground">
+              {product.colors.slice(0, 3).map((color) =>
+                typeof color === 'string' ? color : color.name
+              ).join(', ')}
+              {product.colors.length > 3 && ` +${product.colors.length - 3} more`}
+            </span>
           </div>
         )}
 

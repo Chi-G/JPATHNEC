@@ -66,7 +66,7 @@ export interface Product {
     reviewCount?: number;
     review_count?: number;
     isWishlisted?: boolean;
-    colors?: Color[];
+    colors?: (string | Color)[];  // Allow both string arrays and Color object arrays
     sizes?: string[];
     stock?: number;
     sku?: string;

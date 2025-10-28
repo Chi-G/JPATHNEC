@@ -25,7 +25,7 @@ interface HeroSlide {
 interface HomeProps {
   featured_products: {
     new_arrivals: Product[];
-    best_sellers: Product[]; 
+    best_sellers: Product[];
     trending: Product[];
   };
   categories: Category[];
@@ -38,16 +38,8 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories, auth, cartCount, verified }) => {
-  // Add defensive checks for featured_products
   const { new_arrivals = [], best_sellers = [], trending = [] } = featured_products || {};
 
-  // Debug logging to see what data we're receiving
-  console.log('Featured products data:', featured_products);
-  console.log('New arrivals:', new_arrivals);
-  console.log('Best sellers:', best_sellers);
-  console.log('Trending:', trending);
-
-  // Show verification success toast
   useEffect(() => {
     if (verified) {
       toast.success('🎉 Email verified successfully! Welcome to JPATHNEC. Happy Shopping.', {
@@ -64,7 +56,6 @@ const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories,
     }
 
     try {
-      // Get CSRF token from meta tag
       const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
       const response = await fetch('/api/cart/add', {
@@ -85,9 +76,8 @@ const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories,
       const data = await response.json();
       if (response.ok) {
         toast.success(data.message || 'Product added to cart!');
-        router.reload({ only: ['cartCount'] }); // Refresh cartCount prop
+        router.reload({ only: ['cartCount'] });
       } else if (response.status === 409) {
-        // 409 Conflict - item already exists
         toast.error(data.message || 'This item is already in your cart.');
       } else {
         toast.error(data.message || 'Failed to add product to cart.');
