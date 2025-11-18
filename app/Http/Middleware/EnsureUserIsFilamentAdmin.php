@@ -14,10 +14,20 @@ class EnsureUserIsFilamentAdmin
         $user = Filament::auth()->user();
         $allowedEmails = config('filament-admin.allowed_emails', []);
 
-        if (! $user || ! in_array($user->email, $allowedEmails, true)) {
-            Filament::auth()->logout();
+        $isLoginPage = $request->routeIs('filament.admin.auth.login') ||
+                       $request->is('admin/login');
 
-            abort(403, 'You are not authorized to access this area.');
+        if ($isLoginPage) {
+            return $next($request);
+        }
+
+        if (! $user || ! in_array($user->email, $allowedEmails, true)) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'You are not authorized to access this area.'], 403);
+            }
+
+            return redirect()->route('home')
+                ->with('error', 'You are not authorized to access the admin panel. Only specific admin accounts are allowed.');
         }
 
         return $next($request);
