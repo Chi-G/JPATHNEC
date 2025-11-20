@@ -86,7 +86,7 @@ const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories,
       toast.error('An error occurred while adding to cart.');
       console.error('Add to cart error:', error);
     }
-  };
+  }; 
 
   return (
     <>
