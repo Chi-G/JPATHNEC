@@ -33,10 +33,10 @@ const Login: React.FC<LoginProps> = ({ canResetPassword = false, status }) => {
     });
   };
 
-  const handleSocialLogin = (provider: string) => {
-    // You can implement social login later
-    console.log(`Social login with ${provider}`);
-  };
+//   const handleSocialLogin = (provider: string) => {
+//     // You can implement social login later
+//     console.log(`Social login with ${provider}`);
+//   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
@@ -64,7 +64,7 @@ const Login: React.FC<LoginProps> = ({ canResetPassword = false, status }) => {
               )}
 
               {/* Social Login Options */}
-              <div className="mb-8">
+              {/* <div className="mb-8">
                 <div className="grid grid-cols-2 gap-4">
                   <Button
                     type="button"
@@ -96,7 +96,7 @@ const Login: React.FC<LoginProps> = ({ canResetPassword = false, status }) => {
                     </span>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Login Form */}
               <form onSubmit={handleSubmit} className="space-y-6">

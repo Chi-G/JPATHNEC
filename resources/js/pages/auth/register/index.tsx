@@ -31,10 +31,10 @@ const Register: React.FC = () => {
     });
   };
 
-  const handleSocialLogin = (provider: string) => {
-    // You can implement social login later
-    console.log(`Social login with ${provider}`);
-  };
+//   const handleSocialLogin = (provider: string) => {
+//     // You can implement social login later
+//     console.log(`Social login with ${provider}`);
+//   };
 
   const getPasswordStrength = (password: string) => {
     let strength = 0;
@@ -66,7 +66,7 @@ const Register: React.FC = () => {
               </div>
 
               {/* Social Login Options */}
-              <div className="mb-8">
+              {/* <div className="mb-8">
                 <div className="grid grid-cols-2 gap-4">
                   <Button
                     type="button"
@@ -98,7 +98,7 @@ const Register: React.FC = () => {
                     </span>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Registration Form */}
               <form onSubmit={handleSubmit} className="space-y-6">
