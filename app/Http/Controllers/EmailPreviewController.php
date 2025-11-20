@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\URL;
 
 class EmailPreviewController extends Controller
 {
@@ -14,9 +15,19 @@ class EmailPreviewController extends Controller
     {
         $user = $this->getSampleUser($request->get('user_id', 1));
 
+        // Generate the correct signed verification URL
+        $verifyUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            [
+                'id' => $user->id,
+                'hash' => sha1($user->email),
+            ]
+        );
+
         $data = [
             'user' => $user,
-            'verifyUrl' => url('/email/verify/' . base64_encode($user->email)),
+            'verifyUrl' => $verifyUrl,
             'url' => url('/'),
         ];
 

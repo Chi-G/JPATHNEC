@@ -154,7 +154,7 @@
             <div class="highlight-box">
                 <h3 style="margin-top: 0; color: #667eea;">📧 Verify Your Email Address</h3>
                 <p style="margin-bottom: 0;">To ensure the security of your account and enable all features, please verify your email address by clicking the button below:</p>
-            </div>
+            </div> 
 
             <div style="text-align: center;">
                 <a href="{{ $verifyUrl }}" class="button">✉️ Verify Email Address</a>

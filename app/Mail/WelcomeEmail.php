@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -39,12 +40,22 @@ class WelcomeEmail extends Mailable implements ShouldQueue
      */
     public function content(): Content
     {
+        $verifyUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            [
+                'id' => $this->user->id,
+                'hash' => sha1($this->user->email),
+            ]
+        );
+
+
         return new Content(
             markdown: 'emails.welcome',
             with: [
                 'user' => $this->user,
-                'url' => route('home'),
-                'verifyUrl' => route('verification.notice'),
+                'url' => route('home'), 
+                'verifyUrl' => $verifyUrl,
             ],
         );
     }
