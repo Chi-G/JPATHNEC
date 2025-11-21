@@ -34,6 +34,17 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   const [promoError, setPromoError] = useState('');
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
 
+  // Calculate service charge
+  const serviceCharge = tax / 4;
+
+  // Compute total (frontend calculation includes serviceCharge)
+  const computedTotal =
+    subtotal +
+    tax +
+    serviceCharge +
+    (shipping || 0) -
+    (promoDiscount || 0);
+
   const handleApplyPromoCode = async () => {
     if (!promoCode.trim()) {
       setPromoError('Please enter a promo code');
@@ -58,22 +69,23 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   };
 
   const handleProceedToCheckout = () => {
-    // Set session storage to indicate user came from cart
     sessionStorage.setItem('fromCart', 'true');
-    // Navigate to checkout
     router.visit('/checkout');
   };
 
   return (
     <div className="bg-card border border-border rounded-lg p-6 sticky top-4">
       <h2 className="text-xl font-semibold text-foreground mb-6">Order Summary</h2>
+
       {/* Order Details */}
       <div className="space-y-3 mb-6">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">
             Subtotal ({itemCount} {itemCount === 1 ? 'item' : 'items'})
           </span>
-          <span className="text-foreground font-medium">₦{subtotal.toLocaleString()}</span>
+          <span className="text-foreground font-medium">
+            ₦{subtotal.toLocaleString()}
+          </span>
         </div>
 
         {appliedPromoCode && promoDiscount && promoDiscount > 0 && (
@@ -81,29 +93,58 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             <span className="text-success">
               Promo ({appliedPromoCode})
             </span>
-            <span className="text-success font-medium">-₦{promoDiscount.toLocaleString()}</span>
+            <span className="text-success font-medium">
+              -₦{promoDiscount.toLocaleString()}
+            </span>
           </div>
         )}
 
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Estimated Tax</span>
-          <span className="text-foreground font-medium">₦{tax.toLocaleString()}</span>
+          <span className="text-foreground font-medium">
+            ₦{tax.toLocaleString()}
+          </span>
+        </div>
+
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Service Charge</span>
+          <span className="text-foreground font-medium">
+            ₦{serviceCharge.toLocaleString()}
+          </span>
         </div>
 
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Shipping</span>
           <span className="text-foreground font-medium">
-            {(shipping || 0) === 0 ? 'FREE' : `₦${(shipping || 0).toLocaleString()}`}
+            {shipping === 0
+              ? 'FREE'
+              : shipping
+              ? `₦${shipping.toLocaleString()}`
+              : 'Calculating...'}
           </span>
         </div>
 
+        {/* Total */}
         <div className="border-t border-border pt-3">
           <div className="flex justify-between">
             <span className="text-lg font-semibold text-foreground">Total</span>
-            <span className="text-lg font-bold text-primary">₦{(total || (subtotal + tax + (shipping || 0) - (promoDiscount || 0))).toLocaleString()}</span>
+            <span className="text-lg font-bold text-primary">
+              {(() => {
+                if (typeof total === 'number') {
+                  const tolerance = 0.5;
+                  if (Math.abs(total - computedTotal) > tolerance) {
+                    return `₦${computedTotal.toLocaleString()}`;
+                  }
+                  return `₦${total.toLocaleString()}`;
+                }
+
+                return `₦${computedTotal.toLocaleString()}`;
+              })()}
+            </span>
           </div>
         </div>
       </div>
+
       {/* Promo Code Section */}
       {!appliedPromoCode && (
         <div className="mb-6">
@@ -112,7 +153,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
               type="text"
               placeholder="Enter promo code"
               value={promoCode}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPromoCode(e.target.value.toUpperCase())}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setPromoCode(e.target.value.toUpperCase())
+              }
               className="flex-1"
             />
             <Button
@@ -129,6 +172,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           )}
         </div>
       )}
+
       {/* Checkout Button */}
       <Button
         variant="default"
@@ -139,6 +183,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
         <Icon name="CreditCard" size={18} className="mr-2" />
         Proceed to Checkout
       </Button>
+
       {/* Continue Shopping */}
       <Link href="/product-list">
         <Button variant="outline" fullWidth>
@@ -146,6 +191,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           Continue Shopping
         </Button>
       </Link>
+
       {/* Security Badge */}
       <div className="mt-6 pt-4 border-t border-border">
         <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
