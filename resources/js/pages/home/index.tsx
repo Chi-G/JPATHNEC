@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import toast from 'react-hot-toast';
-import { usePage } from '@inertiajs/react';
 import Header from '../../components/ui/header';
 import HeroSection from './components/HeroSection';
 import FeaturedProducts from './components/FeaturedProducts';
@@ -39,52 +38,16 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories, auth, cartCount, verified }) => {
-  const { props } = usePage();
   const { new_arrivals = [], best_sellers = [], trending = [] } = featured_products || {};
 
   useEffect(() => {
     if (verified) {
       toast.success('🎉 Email verified successfully! Welcome to JPATHNEC. Happy Shopping.', {
         duration: 5000,
-        position: 'top-left',
+        position: 'top-center',
       });
     }
   }, [verified]);
-
-  useEffect(() => {
-    if (props.flash?.login_success) {
-      toast.success(props.flash.login_success, {
-        duration: 5000,
-        position: 'top-left',
-      });
-    }
-
-    if (props.flash?.logout_success) {
-      toast.success(props.flash.logout_success, {
-        duration: 5000,
-        position: 'top-left',
-      });
-    }
-
-    if (props.flash?.success) {
-      toast.success(props.flash.success, {
-        duration: 5000,
-        position: 'top-left',
-      });
-    }
-
-    if (props.flash?.error) {
-      toast.error(props.flash.error, {
-        duration: 5000,
-        position: 'top-left',
-      });
-    }
-  }, [
-    props.flash?.login_success,
-    props.flash?.logout_success,
-    props.flash?.success,
-    props.flash?.error
-  ]);
 
   const handleAddToCart = async (product: Product) => {
     if (!auth?.user) {
