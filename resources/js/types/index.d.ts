@@ -1,22 +1,5 @@
 import { InertiaLinkProps } from '@inertiajs/react';
-import '@inertiajs/core';
 import { LucideIcon } from 'lucide-react';
-
-declare module '@inertiajs/core' {
-  interface PageProps {
-    flash?: {
-      login_success?: string | null;
-      logout_success?: string | null;
-      success?: string | null;
-      error?: string | null;
-    };
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    auth?: {
-    user?: any;
-    };
-    /* eslint-enable @typescript-eslint/no-explicit-any */
-  }
-}
 
 export interface Auth {
     user: User;
