@@ -164,13 +164,13 @@ const ProductInfo = ({ product, onAddToCart, onToggleWishlist, isInWishlist }: P
             ))}
           </SelectContent>
         </Select>
-        <button
+        {/* <button
           type="button"
           className="text-sm text-primary hover:underline"
           title="View size guide"
         >
           Size Guide
-        </button>
+        </button> */}
       </div>
       {/* Color Selection */}
       <div>
