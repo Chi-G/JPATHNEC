@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
 import Header from '../../../components/ui/header';
+import { usePage } from '@inertiajs/react';
+import { type SharedData } from '@/types';
 import Button from '../../../components/ui/button';
 import Input from '../../../components/ui/input';
 import Icon from '../../../components/AppIcon';
@@ -24,8 +26,10 @@ const Register: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
 
+  const { auth, cartCount = 0, wishlistCount = 0 } = usePage<SharedData>().props;
+
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); 
     post('/register', {
       onFinish: () => reset('password', 'password_confirmation'),
     });
@@ -49,7 +53,7 @@ const Register: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      <Header />
+      <Header user={auth?.user} cartCount={cartCount} wishlistCount={wishlistCount} />
       <div className="container mx-auto px-8 md:px-12 lg:px-16 py-8">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">

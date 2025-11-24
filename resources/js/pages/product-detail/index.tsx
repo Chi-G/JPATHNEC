@@ -75,6 +75,7 @@ interface ProductDetailProps {
   reviews?: Review[];
   user?: User | null;
   cartCount?: number;
+  wishlistCount?: number;
 }
 
 const ProductDetail: React.FC<ProductDetailProps> = ({
@@ -82,7 +83,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   related_products = [],
   reviews: initialReviews = [],
   user,
-  cartCount = 0
+  cartCount = 0,
+  wishlistCount = 0
 }) => {
     // Log props for debugging
     console.log('ProductDetail props:', { initialProduct, related_products, reviews: initialReviews, user, cartCount });
@@ -143,7 +145,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     console.warn('Rendering Product Not Found due to missing initialProduct');
     return (
       <div className="min-h-screen bg-background">
-        <Header user={user} cartCount={cartCount} />
+        <Header user={user} cartCount={cartCount} wishlistCount={wishlistCount} />
         <div className="container mx-auto px-8 md:px-12 lg:px-16 py-8">
           <div className="text-center">
             <Icon name="AlertCircle" size={48} className="text-muted-foreground mx-auto mb-4" />
@@ -258,7 +260,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header user={user} cartCount={cartCount} />
+        <Header user={user} cartCount={cartCount} wishlistCount={wishlistCount} />
         <div className="container mx-auto px-8 md:px-12 lg:px-16 py-8">
           <div className="animate-pulse">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -279,7 +281,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   if (!product) {
     return (
       <div className="min-h-screen bg-background">
-        <Header user={user} cartCount={cartCount} />
+        <Header user={user} cartCount={cartCount} wishlistCount={wishlistCount} />
         <div className="container mx-auto px-8 md:px-12 lg:px-16 py-8">
           <div className="text-center">
             <Icon name="AlertCircle" size={48} className="text-muted-foreground mx-auto mb-4" />
@@ -296,7 +298,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 
   return (
     <div className="min-h-screen bg-background">
-      <Header user={user} cartCount={cartCount} />
+      <Header user={user} cartCount={cartCount} wishlistCount={wishlistCount} />
       <main className="container mx-auto px-8 md:px-12 lg:px-16 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-8">

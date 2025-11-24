@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, router } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import Icon from '../AppIcon';
 import Button from './button';
 import Input from './input';
 import { buildProductListUrl } from '../../utils/routes';
+import { type SharedData } from '@/types';
 
 interface User {
   id: number;
@@ -17,9 +19,14 @@ interface HeaderProps {
   wishlistCount?: number;
 }
 
-const Header: React.FC<HeaderProps> = ({ user = null, cartCount = 0 }) => {
+const Header: React.FC<HeaderProps> = ({ user = null, cartCount = 0, wishlistCount = 0 }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // read Inertia shared props as a fallback for pages that don't pass counts
+  const shared = usePage<SharedData>().props;
+
+  const effectiveCartCount = typeof cartCount !== 'undefined' ? cartCount : (shared.cartCount ?? 0);
+  const effectiveWishlistCount = typeof wishlistCount !== 'undefined' ? wishlistCount : (shared.wishlistCount ?? 0);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -248,9 +255,9 @@ const Header: React.FC<HeaderProps> = ({ user = null, cartCount = 0 }) => {
               <Button variant="ghost" size="icon">
                 <Icon name="Heart" size={20} />
                 {/** show wishlist count badge if provided and > 0 */}
-                {typeof wishlistCount !== 'undefined' && wishlistCount > 0 && (
+                {effectiveWishlistCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-mono">
-                    {wishlistCount}
+                    {effectiveWishlistCount} 
                   </span>
                 )}
               </Button>
@@ -260,9 +267,9 @@ const Header: React.FC<HeaderProps> = ({ user = null, cartCount = 0 }) => {
             <Link href="/shopping-cart" className="relative">
               <Button variant="ghost" size="icon">
                 <Icon name="ShoppingCart" size={20} />
-                {cartCount && cartCount > 0 && (
+                {effectiveCartCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-mono">
-                    {cartCount}
+                    {effectiveCartCount}
                   </span>
                 )}
               </Button>

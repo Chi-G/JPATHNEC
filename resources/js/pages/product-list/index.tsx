@@ -44,6 +44,7 @@ interface ProductListProps {
   search_query?: string;
   user?: User | null;
   cartCount?: number;
+  wishlistCount?: number;
 }
 
 const ProductList: React.FC<ProductListProps> = ({
@@ -55,6 +56,7 @@ const ProductList: React.FC<ProductListProps> = ({
   search_query,
   user,
   cartCount = 0,
+  wishlistCount = 0,
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -278,7 +280,7 @@ const ProductList: React.FC<ProductListProps> = ({
         <link rel="canonical" href="/product-list" />
       </Head>
       <div className="min-h-screen bg-background">
-        <Header user={user} cartCount={cartCount} />
+        <Header user={user} cartCount={cartCount} wishlistCount={wishlistCount} />
         <div className="container mx-auto px-8 md:px-12 lg:px-16 py-6">
           <div className="flex gap-6">
             {/* Filter Sidebar */}

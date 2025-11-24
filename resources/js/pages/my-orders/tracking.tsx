@@ -53,9 +53,10 @@ interface Props {
     };
   };
   cartCount: number;
+  wishlistCount?: number;
 }
 
-export default function OrderTracking({ order, auth, cartCount }: Props) {
+export default function OrderTracking({ order, auth, cartCount, wishlistCount = 0 }: Props) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pending': return <Clock className="h-4 w-4" />;
@@ -142,7 +143,7 @@ export default function OrderTracking({ order, auth, cartCount }: Props) {
   return (
     <>
       <Head title={`Order Tracking - ${order.order_number}`} />
-      <Header user={auth.user} cartCount={cartCount} />
+      <Header user={auth.user} cartCount={cartCount} wishlistCount={wishlistCount} />
 
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

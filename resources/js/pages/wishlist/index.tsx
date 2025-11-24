@@ -38,9 +38,9 @@ interface WishlistProps {
         sort?: string;
     };
     cartCount?: number;
+    wishlistCount?: number;
 }
-
-export default function Wishlist({ auth, products, categories, filters, cartCount = 0 }: WishlistProps) {
+export default function Wishlist({ auth, products, categories, filters, cartCount = 0, wishlistCount = 0 }: WishlistProps) {
     const [searchQuery, setSearchQuery] = useState(filters.search || '');
     const [selectedCategory, setSelectedCategory] = useState(filters.category || '');
     const [sortBy, setSortBy] = useState(filters.sort || 'newest');
@@ -169,7 +169,7 @@ export default function Wishlist({ auth, products, categories, filters, cartCoun
             <Head title="My Wishlist - JPATHNEC" />
             
             <div className="min-h-screen bg-background">
-                <Header user={auth.user} cartCount={cartCount} />
+                <Header user={auth.user} cartCount={cartCount} wishlistCount={wishlistCount} />
                 <div className="container mx-auto px-8 md:px-12 lg:px-16 py-6">
                     {/* Breadcrumb */}
                     <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-8">

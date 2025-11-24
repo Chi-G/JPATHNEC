@@ -37,9 +37,10 @@ interface ShoppingCartProps {
   cartSummary: CartSummary;
   user?: { id: number; name: string; email: string } | null;
   cartCount?: number;
+  wishlistCount?: number;
 }
 
-const ShoppingCart: React.FC<ShoppingCartProps> = ({ cartItems, cartSummary, user, cartCount = 0 }) => {
+const ShoppingCart: React.FC<ShoppingCartProps> = ({ cartItems, cartSummary, user, cartCount = 0, wishlistCount = 0 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showSavedItems, setShowSavedItems] = useState(false);
 
@@ -129,7 +130,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cartItems, cartSummary, use
   if (isLoading && !cartItems.length) {
     return (
       <div className="min-h-screen bg-background">
-        <Header user={user} cartCount={cartCount} />
+        <Header user={user} cartCount={cartCount} wishlistCount={wishlistCount} />
         <div className="container mx-auto px-8 md:px-12 lg:px-16 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
@@ -144,7 +145,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cartItems, cartSummary, use
 
   return (
     <div className="min-h-screen bg-background">
-      <Header user={user} cartCount={cartCount} />
+    <Header user={user} cartCount={cartCount} wishlistCount={wishlistCount} />
       <div className="container mx-auto px-8 md:px-12 lg:px-16 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">

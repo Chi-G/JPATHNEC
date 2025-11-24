@@ -14,7 +14,8 @@ interface CheckoutProps {
   auth?: {
     user?: User | null;
   };
-  cartCount: number;
+  cartCount?: number;
+  wishlistCount?: number;
   cartItems: CartItem[];
   cartSummary: CartSummary;
   shippingOptions: ShippingOption[];
@@ -23,7 +24,8 @@ interface CheckoutProps {
 
 const Checkout: React.FC<CheckoutProps> = ({
   auth,
-  cartCount,
+  cartCount = 0,
+  wishlistCount = 0,
   cartItems,
   cartSummary,
   shippingOptions,
@@ -128,7 +130,7 @@ const Checkout: React.FC<CheckoutProps> = ({
 
   return (
     <div className="min-h-screen bg-background">
-      <Header user={auth?.user} cartCount={cartCount} />
+      <Header user={auth?.user} cartCount={cartCount} wishlistCount={wishlistCount} />
 
       <div className="container mx-auto px-8 md:px-12 lg:px-16 py-8">
         {/* Breadcrumb */}

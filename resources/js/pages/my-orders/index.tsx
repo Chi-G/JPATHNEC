@@ -66,6 +66,7 @@ interface MyOrdersProps {
         status?: string;
     };
     cartCount?: number;
+    wishlistCount?: number;
 }
 
 const statusConfig = {
@@ -103,7 +104,7 @@ const paymentStatusConfig = {
     refunded: { label: 'Refunded', color: 'text-purple-600' }
 };
 
-export default function MyOrders({ auth, orders, filters, cartCount = 0 }: MyOrdersProps) {
+export default function MyOrders({ auth, orders, filters, cartCount = 0, wishlistCount = 0 }: MyOrdersProps) {
 
     const [searchQuery, setSearchQuery] = useState(filters?.search || '');
     const [statusFilter, setStatusFilter] = useState(filters?.status || '');
@@ -143,7 +144,7 @@ export default function MyOrders({ auth, orders, filters, cartCount = 0 }: MyOrd
         return (
             <>
                 <Head title="My Orders - JPATHNEC" />
-                <Header user={auth.user} cartCount={cartCount} />
+                <Header user={auth.user} cartCount={cartCount} wishlistCount={wishlistCount} />
 
                 <main className="flex-1">
                     <div className="container mx-auto px-8 md:px-12 lg:px-16 py-8">
@@ -419,7 +420,7 @@ export default function MyOrders({ auth, orders, filters, cartCount = 0 }: MyOrd
         return (
             <>
                 <Head title="My Orders - JPATHNEC" />
-                <Header user={auth.user} cartCount={cartCount} />
+                <Header user={auth.user} cartCount={cartCount} wishlistCount={wishlistCount} />
 
                 <main className="flex-1">
                     <div className="container mx-auto px-8 md:px-12 lg:px-16 py-8">

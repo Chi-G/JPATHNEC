@@ -16,15 +16,16 @@ interface AppearanceProps {
         user: User;
     };
     cartCount?: number;
+    wishlistCount?: number;
 }
 
-export default function Appearance({ auth, cartCount = 0 }: AppearanceProps) {
+export default function Appearance({ auth, cartCount = 0, wishlistCount = 0 }: AppearanceProps) {
     return (
         <>
             <Head title="Appearance Settings - JPATHNEC" />
             
             {/* Add Header */}
-            <Header user={auth.user} cartCount={cartCount} />
+            <Header user={auth.user} cartCount={cartCount} wishlistCount={wishlistCount} />
             
             <div className="min-h-screen bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

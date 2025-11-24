@@ -13,14 +13,15 @@ interface ContactPageProps {
     };
   };
   cartCount?: number;
+  wishlistCount?: number;
 }
 
-export default function ContactPage({ auth, cartCount = 0 }: ContactPageProps) {
+export default function ContactPage({ auth, cartCount = 0, wishlistCount = 0 }: ContactPageProps) {
   return (
     <>
       <Head title="Contact Us - JPATHNEC" />
       
-      <Header user={auth?.user} cartCount={cartCount} />
+      <Header user={auth?.user} cartCount={cartCount} wishlistCount={wishlistCount ?? 0} />
       
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

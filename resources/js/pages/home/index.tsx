@@ -33,11 +33,11 @@ interface HomeProps {
   auth?: {
     user?: User | null;
   };
-  cartCount: number;
+  cartCount?: number;
+  wishlistCount?: number;
   verified?: boolean;
 }
-
-const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories, auth, cartCount, verified }) => {
+const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories, auth, cartCount = 0, wishlistCount = 0, verified }) => {
   const { new_arrivals = [], best_sellers = [], trending = [] } = featured_products || {};
 
   // Show verification success toast
@@ -123,7 +123,7 @@ const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories,
       </Head>
 
       <div className="min-h-screen bg-background">
-        <Header user={auth?.user} cartCount={cartCount} />
+        <Header user={auth?.user} cartCount={cartCount} wishlistCount={wishlistCount} />
         <HeroSection heroSlides={hero_slides} />
         <FeaturedProducts
           title="New Arrivals"
