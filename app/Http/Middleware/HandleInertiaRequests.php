@@ -44,6 +44,11 @@ class HandleInertiaRequests extends Middleware
             $cartCount = \App\Models\CartItem::where('user_id', $request->user()->id)
                 ->sum('quantity');
         }
+        // Get wishlist count for authenticated users
+        $wishlistCount = 0;
+        if ($request->user()) {
+            $wishlistCount = \App\Models\Wishlist::getWishlistCount($request->user()->id);
+        }
 
         return [
             ...parent::share($request),
@@ -52,9 +57,9 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
-            // Share user and cartCount globally for header component
             'user' => $request->user(),
             'cartCount' => $cartCount,
+            'wishlistCount' => $wishlistCount,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [
                 'success' => $request->session()->get('success'),

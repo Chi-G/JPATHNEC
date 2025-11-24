@@ -14,6 +14,7 @@ interface User {
 interface HeaderProps {
   user?: User | null;
   cartCount?: number;
+  wishlistCount?: number;
 }
 
 const Header: React.FC<HeaderProps> = ({ user = null, cartCount = 0 }) => {
@@ -243,9 +244,15 @@ const Header: React.FC<HeaderProps> = ({ user = null, cartCount = 0 }) => {
             )}
 
             {/* Wishlist */}
-            <Link href="/wishlist">
+            <Link href="/wishlist" className="relative">
               <Button variant="ghost" size="icon">
                 <Icon name="Heart" size={20} />
+                {/** show wishlist count badge if provided and > 0 */}
+                {typeof wishlistCount !== 'undefined' && wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-mono">
+                    {wishlistCount}
+                  </span>
+                )}
               </Button>
             </Link>
 

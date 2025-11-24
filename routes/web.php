@@ -23,11 +23,9 @@ Route::redirect('/home', '/', 301);
 Route::post('/newsletter', [NewsletterController::class, 'store'])->name('newsletter.store');
 Route::get('/newsletter/unsubscribe/{token}', [NewsletterController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
 
-// Privacy Policy
-Route::get('/privacy', [PrivacyController::class, 'index'])->name('privacy');
-
-// Support
-Route::get('/support', [SupportController::class, 'index'])->name('support');
+// Privacy Policy & Terms Of Service
+Route::get('/privacy', [PrivacyController::class, 'privacy'])->name('privacy');
+Route::get('/terms', [PrivacyController::class, 'terms'])->name('terms');
 
 // Contact page
 Route::get('/contact', function () {
