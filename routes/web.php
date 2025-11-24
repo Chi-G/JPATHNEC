@@ -11,10 +11,23 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\MyOrdersController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\NewsletterController;
+use App\Http\Controllers\PrivacyController;
+use App\Http\Controllers\SupportController;
 
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::redirect('/home', '/', 301);
+
+// Newsletter
+Route::post('/newsletter', [NewsletterController::class, 'store'])->name('newsletter.store');
+Route::get('/newsletter/unsubscribe/{token}', [NewsletterController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
+
+// Privacy Policy
+Route::get('/privacy', [PrivacyController::class, 'index'])->name('privacy');
+
+// Support
+Route::get('/support', [SupportController::class, 'index'])->name('support');
 
 // Contact page
 Route::get('/contact', function () {

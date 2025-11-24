@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { router } from '@inertiajs/react';
+// import toast from 'react-hot-toast';
 import Input from '../../../components/ui/input';
 import Button from '../../../components/ui/button';
 import Icon from '../../../components/AppIcon';
@@ -31,12 +33,28 @@ const NewsletterSection: React.FC = () => {
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubscribed(true);
-      setIsLoading(false);
-      setEmail('');
-    }, 1500);
+    router.post(
+      '/newsletter',
+      { email },
+      {
+        onSuccess: () => {
+          setIsSubscribed(true);
+          setIsLoading(false);
+          setEmail('');
+        //   toast.success('Newsletter subscription successful');
+        },
+        onError: (errors?: Record<string, string[] | string>) => {
+          setIsLoading(false);
+          const emailErrors = errors && (errors.email as string[] | string | undefined);
+          if (emailErrors) {
+            if (Array.isArray(emailErrors)) setError(emailErrors[0] || 'Invalid email');
+            else setError(String(emailErrors));
+          } else {
+            setError('Failed to subscribe. Please try again.');
+          }
+        },
+      }
+    );
   };
 
   const benefits: Benefit[] = [

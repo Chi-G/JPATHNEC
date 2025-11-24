@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import toast from 'react-hot-toast';
 import Header from '../../components/ui/header';
 import HeroSection from './components/HeroSection';
@@ -9,7 +9,7 @@ import NewsletterSection from './components/NewsletterSection';
 import TrustSignals from './components/TrustSignals';
 import { buildProductListUrl } from '../../utils/routes';
 import { Product, Category, User } from '../../types';
-
+ 
 interface HeroSlide {
   id: number;
   title: string;
@@ -40,6 +40,7 @@ interface HomeProps {
 const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories, auth, cartCount, verified }) => {
   const { new_arrivals = [], best_sellers = [], trending = [] } = featured_products || {};
 
+  // Show verification success toast
   useEffect(() => {
     if (verified) {
       toast.success('🎉 Email verified successfully! Welcome to JPATHNEC. Happy Shopping.', {
@@ -48,6 +49,19 @@ const Home: React.FC<HomeProps> = ({ featured_products, hero_slides, categories,
       });
     }
   }, [verified]);
+
+  // Show flash messages shared by the server (Inertia)
+  const { props } = usePage();
+  useEffect(() => {
+    const pageProps = props as unknown as { flash?: { success?: string; error?: string } };
+    const flash = pageProps.flash;
+    if (flash?.success) {
+      toast.success(flash.success, { duration: 5000, position: 'top-center' });
+    }
+    if (flash?.error) {
+      toast.error(flash.error, { duration: 5000, position: 'top-center' });
+    }
+  }, [props]);
 
   const handleAddToCart = async (product: Product) => {
     if (!auth?.user) {
