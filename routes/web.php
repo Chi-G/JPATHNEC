@@ -27,6 +27,9 @@ Route::get('/newsletter/unsubscribe/{token}', [NewsletterController::class, 'uns
 Route::get('/privacy', [PrivacyController::class, 'privacy'])->name('privacy');
 Route::get('/terms', [PrivacyController::class, 'terms'])->name('terms');
 
+// Support
+Route::get('/support', [SupportController::class, 'index'])->name('support');
+
 // Contact page
 Route::get('/contact', function () {
     $cartCount = 0;
