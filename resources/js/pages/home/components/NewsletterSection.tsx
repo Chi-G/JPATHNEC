@@ -151,15 +151,13 @@ const NewsletterSection: React.FC = () => {
                   className="bg-white"
                 />
                 {error && (
-                  <p className="text-sm text-destructive-foreground mt-1 bg-destructive/10 p-2 rounded">
-                    {error}
-                  </p>
+                  <p className="mt-2 text-sm text-destructive">{error}</p>
                 )}
               </div>
               <Button
                 type="submit"
                 loading={isLoading}
-                size="lg"
+                size="lg" 
                 variant="secondary" 
                 className="w-full"
                 iconName="Mail"
