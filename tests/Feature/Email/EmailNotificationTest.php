@@ -26,7 +26,7 @@ class EmailNotificationTest extends TestCase
 
         Mail::to($user->email)->send(new WelcomeEmail($user));
 
-        Mail::assertSent(WelcomeEmail::class, function ($mail) use ($user) {
+        Mail::assertQueued(WelcomeEmail::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email);
         });
     }
@@ -89,8 +89,16 @@ class EmailNotificationTest extends TestCase
         });
     }
 
-    public function test_email_queue_connection_is_configured()
+    public function test_emails_are_queued_for_async_sending()
     {
-        $this->assertEquals('database', config('queue.default'));
+        Mail::fake();
+
+        $user = User::factory()->create();
+
+        // WelcomeEmail implements ShouldQueue
+        Mail::to($user->email)->send(new WelcomeEmail($user));
+
+        // Assert that the email was queued (not sent immediately)
+        Mail::assertQueued(WelcomeEmail::class);
     }
 }
