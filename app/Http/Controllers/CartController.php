@@ -160,7 +160,7 @@ class CartController extends Controller
     {
         $subtotal = array_sum(array_column($cartItems, 'total_price'));
         $tax = $subtotal * 0.1; // 10% tax
-        $shipping = $subtotal > 50 ? 0 : 5.99; // Free shipping over $50
+        $shipping = 1500; // Flat shipping rate of ₦1500
         $total = $subtotal + $tax + $shipping;
 
         return [

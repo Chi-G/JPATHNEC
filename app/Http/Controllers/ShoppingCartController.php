@@ -13,14 +13,24 @@ class ShoppingCartController extends Controller
      */
     public function index(Request $request): Response
     {
+        $subtotal = $this->calculateSubtotal($request);
+        $tax = $this->calculateTax($request);
+        $shipping = $this->calculateShipping($request);
+        $serviceFee = $this->calculateServiceFee($request);
+        $promoDiscount = $this->calculatePromoDiscount($request);
+
         return Inertia::render('shopping-cart/index', [
-            'cart_items' => $this->getCartItems($request),
-            'subtotal' => $this->calculateSubtotal($request),
-            'tax' => $this->calculateTax($request),
-            'shipping' => $this->calculateShipping($request),
-            'total' => $this->calculateTotal($request),
+            'cart_items' => $this->getCartItems($request), 
+
+            'subtotal' => $subtotal,
+            'tax' => $tax,
+            'shipping' => $shipping,
+            'serviceFee' => $serviceFee,
+            'promoDiscount' => $promoDiscount,
+            'total' => $subtotal + $tax + $shipping + $serviceFee - $promoDiscount,
+
             'recommended_products' => $this->getRecommendedProducts(),
-        ]);
+        ]); 
     }
 
     /**
@@ -34,9 +44,6 @@ class ShoppingCartController extends Controller
             'size' => 'nullable|string',
             'color' => 'nullable|string',
         ]);
-
-        // Add item to cart logic here
-        // This would typically involve session or database storage
 
         return response()->json([
             'success' => true,
@@ -53,8 +60,6 @@ class ShoppingCartController extends Controller
             'quantity' => 'required|integer|min:0',
         ]);
 
-        // Update cart item logic here
-
         return response()->json([
             'success' => true,
             'message' => 'Cart updated successfully',
@@ -66,8 +71,6 @@ class ShoppingCartController extends Controller
      */
     public function destroy($itemId)
     {
-        // Remove item from cart logic here
-
         return response()->json([
             'success' => true,
             'message' => 'Item removed from cart',
@@ -79,7 +82,6 @@ class ShoppingCartController extends Controller
      */
     private function getCartItems($request): array
     {
-        // Mock data - replace with actual cart retrieval
         return [
             [
                 'id' => 1,
@@ -94,7 +96,6 @@ class ShoppingCartController extends Controller
                 'color' => 'Black',
                 'subtotal' => 59.98,
             ],
-            // More cart items...
         ];
     }
 
@@ -103,7 +104,7 @@ class ShoppingCartController extends Controller
      */
     private function calculateSubtotal($request): float
     {
-        return 59.98; // Mock calculation
+        return 59.98;
     }
 
     /**
@@ -111,7 +112,7 @@ class ShoppingCartController extends Controller
      */
     private function calculateTax($request): float
     {
-        return 5.40; // Mock calculation
+        return 5.40;
     }
 
     /**
@@ -119,7 +120,23 @@ class ShoppingCartController extends Controller
      */
     private function calculateShipping($request): float
     {
-        return 9.99; // Mock calculation
+        return 1500; // Flat shipping rate of ₦1500
+    }
+
+    /**
+     * NEW: Service Fee
+     */
+    private function calculateServiceFee($request): float
+    {
+        return 4.99;
+    }
+
+    /**
+     * NEW: Promo Discount (optional)
+     */
+    private function calculatePromoDiscount($request): float
+    {
+        return 0;
     }
 
     /**
@@ -127,16 +144,19 @@ class ShoppingCartController extends Controller
      */
     private function calculateTotal($request): float
     {
-        return $this->calculateSubtotal($request) + $this->calculateTax($request) + $this->calculateShipping($request);
+        return
+            $this->calculateSubtotal($request)
+            + $this->calculateTax($request)
+            + $this->calculateShipping($request)
+            + $this->calculateServiceFee($request)
+            - $this->calculatePromoDiscount($request);
     }
 
     /**
-     * Get recommended products
+     * Recommended products
      */
     private function getRecommendedProducts(): array
     {
-        return [
-            // Recommended products array
-        ];
+        return [];
     }
 }
