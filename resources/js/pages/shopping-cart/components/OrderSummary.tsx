@@ -35,7 +35,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
 
   // Calculate service charge
-  const serviceCharge = tax / 4;
+  const serviceCharge = tax / 9;
 
   // Compute total (frontend calculation includes serviceCharge)
   const computedTotal =
@@ -106,7 +106,8 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           </span>
         </div>
 
-        <div className="flex justify-between text-sm">
+        {/* Service Charge - Hidden but included in total */}
+        <div className="hidden flex justify-between text-sm">
           <span className="text-muted-foreground">Service Charge</span>
           <span className="text-foreground font-medium">
             ₦{serviceCharge.toLocaleString()}
@@ -114,7 +115,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
         </div>
 
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Shipping</span>
+          <span className="text-muted-foreground">Delivery </span>
           <span className="text-foreground font-medium">
             {shipping === 0
               ? 'FREE'

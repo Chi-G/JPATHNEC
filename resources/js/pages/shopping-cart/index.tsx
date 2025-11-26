@@ -24,7 +24,7 @@ interface CartItem {
   total_price: number;
 }
 
-interface CartSummary {
+interface CartSummary { 
   subtotal: number;
   tax: number;
   shipping: number;

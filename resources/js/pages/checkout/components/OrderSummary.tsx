@@ -96,15 +96,15 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
         )}
 
         <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Estimated Tax</span>
+          <span className="text-foreground">₦{tax?.toFixed(2)}</span>
+        </div>
+
+        <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Delivery</span>
           <span className="text-foreground">
             {deliveryFee === 0 ? 'FREE' : `₦${deliveryFee?.toFixed(2)}`}
           </span>
-        </div>
-
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Tax</span>
-          <span className="text-foreground">₦{tax?.toFixed(2)}</span>
         </div>
 
         <div className="border-t border-border pt-3">
