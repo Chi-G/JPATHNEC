@@ -12,6 +12,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\CartItem;
 use App\Mail\OrderConfirmation;
+use App\Notifications\WhatsApp\OrderConfirmationWhatsApp;
 use Inertia\Inertia;
 
 class PaymentController extends Controller
@@ -254,6 +255,19 @@ class PaymentController extends Controller
             try {
                 $order->load('items.product', 'user');
                 Mail::to($order->user->email)->send(new OrderConfirmation($order));
+                
+                // Send WhatsApp notification (if user has phone number)
+                if ($order->user->phone) { 
+                    try {
+                        $order->user->notify(new OrderConfirmationWhatsApp($order));
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send WhatsApp order confirmation', [
+                            'order_id' => $order->id,
+                            'error' => $e->getMessage() 
+                        ]);
+                    }
+                }
+                
                 Log::info('Order confirmation email sent', [
                     'order_id' => $order->id,
                     'order_number' => $order->order_number,

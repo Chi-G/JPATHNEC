@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use App\Notifications\WhatsApp\OrderStatusUpdateWhatsApp;
 
 class Order extends Model
 {
@@ -30,7 +31,7 @@ class Order extends Model
         'payment_reference',
         'payment_status',
         'shipping_method',
-        'tracking_number',
+        'tracking_number', 
         'shipped_at',
         'delivered_at',
         'notes',
@@ -211,9 +212,22 @@ class Order extends Model
             $this->update(['delivered_at' => now()]);
         }
 
-        // Send notification to customer if status changed
+        // Send notifications to customer if status changed
         if ($previousStatus !== $status && $this->user) {
+            // Email notification
             $this->user->notify(new \App\Notifications\OrderStatusUpdated($this, $previousStatus));
+            
+            // WhatsApp notification (if user has phone number)
+            if ($this->user->phone) {
+                try {
+                    $this->user->notify(new OrderStatusUpdateWhatsApp($this, $previousStatus));
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send WhatsApp notification', [
+                        'order_id' => $this->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
         }
     }
 
