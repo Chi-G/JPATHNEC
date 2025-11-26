@@ -42,15 +42,10 @@ return new class extends Migration
         }
 
         // 3) Add unique index if it doesn't already exist
-        $indexExists = DB::selectOne("SELECT COUNT(1) as cnt FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND INDEX_NAME = 'products_slug_unique'");
-
-        Schema::table('products', function (Blueprint $table) use ($indexExists) {
-            // make sure column is not nullable
-            $table->string('slug')->nullable(false)->change();
-        });
-
-        if (empty($indexExists) || ($indexExists && $indexExists->cnt == 0)) {
+        if (!Schema::hasIndex('products', 'products_slug_unique')) {
             Schema::table('products', function (Blueprint $table) {
+                // make sure column is not nullable
+                $table->string('slug')->nullable(false)->change();
                 $table->unique('slug');
             });
         }
@@ -59,9 +54,7 @@ return new class extends Migration
     public function down(): void
     {
         // Only drop the unique index if it exists
-        $indexExists = DB::selectOne("SELECT COUNT(1) as cnt FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND INDEX_NAME = 'products_slug_unique'");
-
-        if (!empty($indexExists) && $indexExists->cnt > 0) {
+        if (Schema::hasIndex('products', 'products_slug_unique')) {
             Schema::table('products', function (Blueprint $table) {
                 $table->dropUnique(['slug']);
             });
