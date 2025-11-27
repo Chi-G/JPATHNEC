@@ -8,11 +8,14 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Builder;
 
 class OrdersTable
 {
@@ -24,6 +27,20 @@ class OrdersTable
                     ->searchable(),
                 TextColumn::make('user.name')
                     ->searchable(),
+                
+                // WhatsApp indicator
+                IconColumn::make('user.phone')
+                    ->label('WhatsApp')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-chat-bubble-left-right')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('gray')
+                    ->tooltip(fn ($record) => $record->user?->phone 
+                        ? 'WhatsApp: ' . $record->user->phone 
+                        : 'No WhatsApp')
+                    ->alignCenter(),
+                
                 TextColumn::make('session_id')
                     ->searchable(),
                 TextColumn::make('status')
@@ -81,7 +98,15 @@ class OrdersTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Filter::make('has_whatsapp')
+                    ->label('Has WhatsApp')
+                    ->query(fn (Builder $query) => $query->whereHas('user', fn ($q) => $q->whereNotNull('phone')))
+                    ->toggle(),
+                
+                Filter::make('no_whatsapp')
+                    ->label('No WhatsApp')
+                    ->query(fn (Builder $query) => $query->whereHas('user', fn ($q) => $q->whereNull('phone')))
+                    ->toggle(),
             ])
             ->recordActions([
                 ViewAction::make(),
