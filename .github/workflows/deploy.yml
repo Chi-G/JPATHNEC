@@ -1,0 +1,59 @@
+name: Deploy to GO54 Production
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Allow manual deployment from GitHub Actions tab
+
+jobs:
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🚀 Deploy to GO54 Server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            echo "================================================"
+            echo "🚀 Starting deployment to jpathnec.com"
+            echo "================================================"
+            
+            echo "📂 Navigating to project directory..."
+            cd /home2/jpathne1/public_html
+            
+            echo "📥 Pulling latest code from GitHub..."
+            git pull origin main
+            
+            echo "📦 Installing Composer dependencies..."
+            /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction
+            
+            echo "🗄️ Running database migrations..."
+            php artisan migrate --force
+            
+            echo "🧹 Clearing application cache..."
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan route:clear
+            php artisan view:clear
+            
+            echo "⚡ Rebuilding optimized cache..."
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            
+            echo "🔄 Restarting queue workers..."
+            php artisan queue:restart
+            
+            echo "🔐 Setting proper permissions..."
+            chmod -R 775 storage bootstrap/cache
+            
+            echo "================================================"
+            echo "✅ Deployment completed successfully!"
+            echo "🌐 Site: https://jpathnec.com"
+            echo "🕒 Deployed at: $(date)"
+            echo "================================================"
