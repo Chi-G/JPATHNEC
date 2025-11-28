@@ -30,30 +30,30 @@ jobs:
             git pull origin main
             
             echo "📦 Installing Composer dependencies..."
-            php composer.phar install --no-dev --optimize-autoloader --no-interaction
+            /opt/cpanel/ea-php83/root/usr/bin/php composer.phar install --no-dev --optimize-autoloader --no-interaction
             
-            echo "� Installing Node.js dependencies..."
+            echo "📦 Installing Node.js dependencies..."
             npm ci --production
             
             echo "🎨 Building frontend assets with Vite..."
             npm run build
             
-            echo "�🗄️ Running database migrations..."
-            php artisan migrate --force
+            echo "🗄️ Running database migrations..."
+            /opt/cpanel/ea-php83/root/usr/bin/php artisan migrate --force
             
             echo "🧹 Clearing application cache..."
-            php artisan config:clear
-            php artisan cache:clear
-            php artisan route:clear
-            php artisan view:clear
+            /opt/cpanel/ea-php83/root/usr/bin/php artisan config:clear
+            /opt/cpanel/ea-php83/root/usr/bin/php artisan cache:clear
+            /opt/cpanel/ea-php83/root/usr/bin/php artisan route:clear
+            /opt/cpanel/ea-php83/root/usr/bin/php artisan view:clear
             
             echo "⚡ Rebuilding optimized cache..."
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
+            /opt/cpanel/ea-php83/root/usr/bin/php artisan config:cache
+            /opt/cpanel/ea-php83/root/usr/bin/php artisan route:cache
+            /opt/cpanel/ea-php83/root/usr/bin/php artisan view:cache
             
             echo "🔄 Restarting queue workers..."
-            php artisan queue:restart
+            /opt/cpanel/ea-php83/root/usr/bin/php artisan queue:restart
             
             echo "🔐 Setting proper permissions..."
             chmod -R 775 storage bootstrap/cache
