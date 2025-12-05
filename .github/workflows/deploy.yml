@@ -32,6 +32,12 @@ jobs:
             echo "Installing Composer dependencies..."
             /opt/cpanel/ea-php83/root/usr/bin/php composer.phar install --no-dev --optimize-autoloader --no-interaction
             
+            echo "Installing Node dependencies..."
+            npm ci --production=false
+            
+            echo "Building frontend assets..."
+            npm run build
+            
             echo "Running database migrations..."
             /opt/cpanel/ea-php83/root/usr/bin/php artisan migrate --force
             
