@@ -117,7 +117,7 @@ const Header: React.FC<HeaderProps> = ({ user = null, cartCount = 0, wishlistCou
   const handleLogout = () => {
     router.post('/logout', {}, {
       onSuccess: () => {
-        // Logout successful, user will be redirected by Laravel
+        // logout successful, user will be redirected by Laravel
       }
     });
   };
@@ -125,11 +125,11 @@ const Header: React.FC<HeaderProps> = ({ user = null, cartCount = 0, wishlistCou
   return (
     <header className="sticky top-0 z-40 w-full bg-background border-b border-border shadow-elevation-sm">
       <div className="container mx-auto px-8 md:px-12 lg:px-16">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 gap-2 sm:gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 text-xl font-bold text-primary">
-            <img src="/logo.png" alt="JPATHNEC Logo" width={28} height={28} className="text-primary" />
-            <span className="font-inter font-bold">JPATHNEC</span>
+          <Link href="/" className="flex items-center space-x-2 text-xl font-bold text-primary flex-shrink-0">
+            <img src="/logo.png" alt="JPATHNEC Logo" width={28} height={28} className="text-primary flex-shrink-0" />
+            <span className="font-inter font-bold whitespace-nowrap">JPATHNEC</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -173,7 +173,7 @@ const Header: React.FC<HeaderProps> = ({ user = null, cartCount = 0, wishlistCou
           </nav>
 
           {/* Search, Account, Wishlist, Cart */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
             {/* Desktop Search */}
             <div className="hidden lg:block relative" ref={searchRef}>
               <form onSubmit={handleSearch} className="relative">
