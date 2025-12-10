@@ -26,8 +26,18 @@ jobs:
             echo "Navigating to project directory..."
             cd /home2/jpathne1/public_html
             
-            echo "Pulling latest code from GitHub..."
-            git pull origin main
+            echo "Checking git repository status..."
+            if [ ! -d .git ]; then
+              echo "Git repository not found. Initializing..."
+              git init
+              git remote add origin https://github.com/Chi-G/JPATHNEC.git
+              git fetch origin
+              git checkout -b main --track origin/main
+              echo "Git repository initialized successfully"
+            else
+              echo "Pulling latest code from GitHub..."
+              git pull origin main
+            fi
             
             echo "Installing Composer dependencies..."
             /opt/cpanel/ea-php83/root/usr/bin/php composer.phar install --no-dev --optimize-autoloader --no-interaction

@@ -11,7 +11,7 @@ return [
     |
     */
     'allowed_emails' => [
-        'chijindu.nwokeohuru@gmail.com',
+        'chijindu.nwokeohuru@gmail.com', 
         'admin@jpathnec.com',
     ],
 ];
