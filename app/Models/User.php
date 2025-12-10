@@ -12,8 +12,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Mail\WelcomeEmail;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, TwoFactorAuthenticatable;
@@ -168,5 +170,16 @@ class User extends Authenticatable implements MustVerifyEmail
             ->sum(function ($item) {
                 return $item->quantity * $item->price;
             });
+    }
+
+    /**
+     * Determine if the user can access the Filament admin panel.
+     * Required by Filament in production environments.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // Check if user's email is in the allowed admin emails list
+        $allowedEmails = config('filament-admin.allowed_emails', []);
+        return in_array($this->email, $allowedEmails, true);
     }
 }
