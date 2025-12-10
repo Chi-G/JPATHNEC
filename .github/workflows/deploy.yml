@@ -44,6 +44,9 @@ jobs:
             echo "Creating storage symlink..."
             /opt/cpanel/ea-php83/root/usr/bin/php artisan storage:link --force
             
+            echo "Publishing Livewire assets..."
+            /opt/cpanel/ea-php83/root/usr/bin/php artisan vendor:publish --force --tag=livewire:assets
+            
             echo "Clearing application cache..."
             /opt/cpanel/ea-php83/root/usr/bin/php artisan config:clear
             /opt/cpanel/ea-php83/root/usr/bin/php artisan cache:clear
