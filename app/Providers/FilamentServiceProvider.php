@@ -14,6 +14,6 @@ class FilamentServiceProvider extends ServiceProvider
         });
 
         // Fix for shared hosting cookie issues
-        config(['session.same_site' => 'lax']);
+        config(['session.same_site' => 'lax']); 
     }
 }
